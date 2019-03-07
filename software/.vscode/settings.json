@@ -1,0 +1,26 @@
+{
+    "files.associations": {
+        "stm32f1xx.h": "c",
+        "stdlib.h": "c",
+        "stdint.h": "c",
+        "math.h": "c",
+        "debug_macros.h": "c",
+        "em_device.h": "c",
+        "efm32gg11b420f2048gq100.h": "c",
+        "trng.h": "c",
+        "systick.h": "c",
+        "crypto.h": "c",
+        "msc.h": "c",
+        "cmu.h": "c",
+        "rtcc.h": "c",
+        "adc.h": "c",
+        "qspi.h": "c",
+        "i2c.h": "c",
+        "emu.h": "c",
+        "efm32gg11b820f2048gq100.h": "c",
+        "core_cm4.h": "c",
+        "atomic.h": "c",
+        "utils.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Enabled"
+}
