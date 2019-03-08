@@ -1,6 +1,9 @@
 #ifndef __MCP9600_H__
 #define __MCP9600_H__
 
+#include <em_device.h>
+#include "i2c.h"
+
 #define MCP9600_I2C_ADDR 0x60
 //#define MCP9600_I2C_ADDR 0x61
 //#define MCP9600_I2C_ADDR 0x62

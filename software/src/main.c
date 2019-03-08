@@ -496,6 +496,47 @@ int main()
         on += step;
 
         fPhaseAngle = CLAMP(on, 0.f, 1.f);
+
+
+        static uint64_t last = 0;
+
+        //if(g_ullSystemTick - last > 1000)
+        {
+            i2c1_write_byte(MCP9600_I2C_ADDR, MCP9600_REG_STAT, I2C_RESTART);
+
+            uint8_t ready = i2c1_read_byte(MCP9600_I2C_ADDR, I2C_STOP);
+
+            if(ready & MCP9600_TH_UPDT)
+            {
+                i2c1_write_byte(MCP9600_I2C_ADDR, MCP9600_REG_HJT, I2C_RESTART);
+
+                uint8_t buf[2];
+
+                i2c1_read(MCP9600_I2C_ADDR, buf, 2, I2C_STOP);
+
+                uint16_t x = ((uint16_t)buf[0] << 8) | buf[1];
+                float temp = 0.f;
+
+                if(x & 0x8000)
+                {
+                    x = ~x + 1;
+                    temp = -0.0625f * x;
+                }
+                else
+                {
+                    temp = 0.0625f * x;
+                }
+
+                buf[0] = MCP9600_REG_STAT;
+                buf[1] = 0x00;
+
+                i2c1_write(MCP9600_I2C_ADDR, buf, 2, I2C_STOP);
+
+                DBGPRINTLN_CTX("Last updated %llu ms ago, MCP9600 temp %.3f C", g_ullSystemTick - last, temp);
+           
+                last = g_ullSystemTick;
+            }
+        }
 /*
         DBGPRINTLN_CTX("ADC Temp: %.2f", adc_get_temperature());
         DBGPRINTLN_CTX("EMU Temp: %.2f", emu_get_temperature());
