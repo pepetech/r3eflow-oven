@@ -3,21 +3,21 @@
 
 #include <stdint.h>
 
-typedef struct pid
+typedef struct SPid
 {
-    float dt;
-    float max;
-    float min;
-    float Kp;
-    float Kd;
-    float Ki;
-    float pre_error;
-    float integral;
-    volatile float setpoint;
-    volatile float value;
-    volatile float output;
-} PID;
+    float m_fdt;
+    float m_fMax;
+    float m_fMin;
+    float m_fKp;
+    float m_fKd;
+    float m_fKi;
+    float m_fPre_error;
+    float m_fIntegral;
+    volatile float m_fSetpoint;
+    volatile float m_fValue;
+    volatile float m_fOutput;
+} SPID;
 
-void pid_calc(PID *pid);
+void pid_calc(SPID *pid);
 
 #endif // __PID_H__
