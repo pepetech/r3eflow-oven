@@ -23,16 +23,19 @@
 #define MCP9600_REG_TCFG 0x05       // Thermocouple Sensor Configuration
 #define MCP9600_REG_CFG 0x06        // Device Configuration
 
+#define MCP9600_REG_ALRT_CFG 0x08   // Alert Configuration Mask
 #define MCP9600_REG_ALRT1CFG 0x08   // Alert 1 Configuration
 #define MCP9600_REG_ALRT2CFG 0x09   // Alert 2 Configuration
 #define MCP9600_REG_ALRT3CFG 0x0A   // Alert 3 Configuration
 #define MCP9600_REG_ALRT4CFG 0x0B   // Alert 4 Configuration
 
+#define MCP9600_REG_ALRT_HYS 0x0C   // Alert Hysteresis mask
 #define MCP9600_REG_ALRT1HYS 0x0C   // Alert 1 Hysteresis
 #define MCP9600_REG_ALRT2HYS 0x0D   // Alert 2 Hysteresis
 #define MCP9600_REG_ALRT3HYS 0x0E   // Alert 3 Hysteresis
 #define MCP9600_REG_ALRT4HYS 0x0F   // Alert 4 Hysteresis
 
+#define MCP9600_REG_ALRT_LIM 0x10   // Alert Limit Mask
 #define MCP9600_REG_ALRT1LIM 0x10   // Alert 1 Limit
 #define MCP9600_REG_ALRT2LIM 0x11   // Alert 2 Limit
 #define MCP9600_REG_ALRT3LIM 0x12   // Alert 3 Limit
@@ -116,7 +119,7 @@ uint8_t mcp9600_get_revision();
 void mcp9600_set_status(uint8_t ubStatus);
 uint8_t mcp9600_get_status();
 
-void mcp9600_set_sensor_onfig(uint8_t ubConfig);
+void mcp9600_set_sensor_config(uint8_t ubConfig);
 uint8_t mcp9600_get_sensor_config();
 
 void mcp9600_set_config(uint8_t ubConfig);
