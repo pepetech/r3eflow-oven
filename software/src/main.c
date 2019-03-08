@@ -18,12 +18,19 @@
 #include "adc.h"
 #include "i2c.h"
 #include "mcp9600.h"
+#include "pid.h"
 
 #define ZEROCROSS_DELAY     1400    // us
 #define SSR_LATCH_OFFSET    5       // us
+#define ZEROCROSS_DEADTIME  300     // us
 
-#define MAX_PHASE_ANGLE     (10000 - 2 * SSR_LATCH_OFFSET)
-#define MIN_PHASE_ANGLE     (300)
+#define PHASE_ANGLE_WIDTH   10000   // us
+#define MAX_PHASE_ANGLE     (PHASE_ANGLE_WIDTH - ZEROCROSS_DEADTIME)
+#define MIN_PHASE_ANGLE     (2 * SSR_LATCH_OFFSET)
+
+#define PID_KP  1    // pid proportional gain
+#define PID_KD  0    // pid derivative gain
+#define PID_KI  0       // pid integration gain
 
 // Structs
 
@@ -38,6 +45,7 @@ static uint16_t get_device_revision();
 
 // Variables
 static volatile float fPhaseAngle = 0.f;
+static volatile pid_t ovenPid;
 
 // ISRs
 void _wtimer0_isr()
@@ -46,9 +54,10 @@ void _wtimer0_isr()
 
     if(ulFlags & WTIMER_IF_OF)
     {
-        uint32_t ulCompare = ((1.f - fPhaseAngle) * (MAX_PHASE_ANGLE - MIN_PHASE_ANGLE)) + MIN_PHASE_ANGLE;
+        //uint32_t ulCompare = ((1.f - fPhaseAngle) * (MAX_PHASE_ANGLE - MIN_PHASE_ANGLE)) + MIN_PHASE_ANGLE;
 
-        WTIMER1->CC[1].CCV = (float)ulCompare / 0.028f;
+        //WTIMER1->CC[1].CCV = (float)ulCompare / 0.028f;
+        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - ovenPid.fOutput) / 0.028f;
         WTIMER1->CC[2].CCV = WTIMER1->CC[1].CCV + ((float)SSR_LATCH_OFFSET / 0.028f);
     }
 }
@@ -231,10 +240,10 @@ void get_device_name(char *pszDeviceName, uint32_t ulDeviceNameSize)
         szFamily = "EZR32WG";
     else if(ubFamily == 0x7A)
         szFamily = "EZR32HG";
-    
+
     uint8_t ubPackage = (DEVINFO->MEMINFO & _DEVINFO_MEMINFO_PKGTYPE_MASK) >> _DEVINFO_MEMINFO_PKGTYPE_SHIFT;
     char cPackage = '?';
-    
+
     if(ubPackage == 74)
         cPackage = '?';
     else if(ubPackage == 76)
@@ -390,13 +399,7 @@ int init()
 }
 int main()
 {
-    i2c1_write_byte(MCP9600_I2C_ADDR, MCP9600_REG_ID, I2C_RESTART);
-
-    uint8_t buf[2];
-
-    i2c1_read(MCP9600_I2C_ADDR, buf, 2, I2C_STOP);
-
-    DBGPRINTLN_CTX("MCP9600 ID 0x%02X%02X", buf[0], buf[1]);
+    DBGPRINTLN_CTX("MCP9600 ID 0x%02X%02X", mcp9600_get_id(), mcp9600_get_revision());
 
     // Internal flash test
     DBGPRINTLN_CTX("Initial calibration dump:");
@@ -423,6 +426,10 @@ int main()
     DBGPRINTLN_CTX("0x000FFFFC: %08X", *(volatile uint32_t *)0x000FFFFC);
     DBGPRINTLN_CTX("0x00100000: %08X", *(volatile uint32_t *)0x00100000);
     */
+
+   // PID initialization
+   ovenPid = pid_init(MAX_PHASE_ANGLE, MIN_PHASE_ANGLE, PID_KP, PID_KD, PID_KI);
+   ovenPid.fSetpoint = 100.f;
 
    // Wide Timer 0 - Capture zero cross
     CMU->HFPERCLKEN1 |= CMU_HFPERCLKEN1_WTIMER0;
@@ -474,68 +481,54 @@ int main()
 
     while(1)
     {
-        GPIO->P[0].DOUT ^= BIT(0);
-
-        delay_ms(10);
-
-        static float on = 0.f;
-        static float step = 0.005f;
-
-        if(on >= 1.f)
+        static uint64_t last_blinky = 0;
+        if(g_ullSystemTick > (last_blinky + 500))
         {
-            on = 1.f;
-            step = -step;
+            last_blinky = g_ullSystemTick;
+            GPIO->P[0].DOUT ^= BIT(0);
         }
 
-        if(on <= 0.f)
+        static uint64_t last_sweep = 0;
+        if(g_ullSystemTick > (last_sweep + 500))
         {
-            on = 0.f;
-            step = -step;
-        }
+            last_sweep = g_ullSystemTick;
+            static float on = 0.f;
+            static float step = 0.005f;
 
-        on += step;
-
-        fPhaseAngle = CLAMP(on, 0.f, 1.f);
-
-
-        static uint64_t last = 0;
-
-        //if(g_ullSystemTick - last > 1000)
-        {
-            i2c1_write_byte(MCP9600_I2C_ADDR, MCP9600_REG_STAT, I2C_RESTART);
-
-            uint8_t ready = i2c1_read_byte(MCP9600_I2C_ADDR, I2C_STOP);
-
-            if(ready & MCP9600_TH_UPDT)
+            if(on >= 1.f)
             {
-                i2c1_write_byte(MCP9600_I2C_ADDR, MCP9600_REG_HJT, I2C_RESTART);
-
-                uint8_t buf[2];
-
-                i2c1_read(MCP9600_I2C_ADDR, buf, 2, I2C_STOP);
-
-                uint16_t x = ((uint16_t)buf[0] << 8) | buf[1];
-                float temp = 0.f;
-
-                if(x & 0x8000)
-                {
-                    x = ~x + 1;
-                    temp = -0.0625f * x;
-                }
-                else
-                {
-                    temp = 0.0625f * x;
-                }
-
-                buf[0] = MCP9600_REG_STAT;
-                buf[1] = 0x00;
-
-                i2c1_write(MCP9600_I2C_ADDR, buf, 2, I2C_STOP);
-
-                DBGPRINTLN_CTX("Last updated %llu ms ago, MCP9600 temp %.3f C", g_ullSystemTick - last, temp);
-           
-                last = g_ullSystemTick;
+                on = 1.f;
+                step = -step;
             }
+
+            if(on <= 0.f)
+            {
+                on = 0.f;
+                step = -step;
+            }
+
+            on += step;
+
+            fPhaseAngle = CLAMP(on, 0.f, 1.f);
+        }
+
+        static uint64_t last_pid_updt = 0;
+        if(mcp9600_get_status() &  MCP9600_TH_UPDT)
+        {
+            float temp = mcp9600_get_hj_temp();
+
+            mcp9600_set_status(0x00);
+
+            last_pid_updt = g_ullSystemTick;
+
+            ovenPid.fDeltaTime = g_ullSystemTick - last_pid_updt;
+            ovenPid.fValue = temp;
+            pid_calc((pid_t*)&ovenPid);
+
+            DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - last_pid_updt);
+            DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", temp);
+            DBGPRINTLN_CTX("PID - temp target %.3f C", ovenPid.fSetpoint);
+            DBGPRINTLN_CTX("PID - output %f %%", ovenPid.fOutput);
         }
 /*
         DBGPRINTLN_CTX("ADC Temp: %.2f", adc_get_temperature());
