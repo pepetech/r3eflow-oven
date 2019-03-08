@@ -17,6 +17,13 @@
 #include "rtcc.h"
 #include "adc.h"
 #include "i2c.h"
+#include "mcp9600.h"
+
+#define ZEROCROSS_DELAY     1400    // us
+#define SSR_LATCH_OFFSET    5       // us
+
+#define MAX_PHASE_ANGLE     (10000 - 2 * SSR_LATCH_OFFSET)
+#define MIN_PHASE_ANGLE     (300)
 
 // Structs
 
@@ -30,8 +37,21 @@ void get_device_name(char *pszDeviceName, uint32_t ulDeviceNameSize);
 static uint16_t get_device_revision();
 
 // Variables
+static volatile float fPhaseAngle = 0.f;
 
 // ISRs
+void _wtimer0_isr()
+{
+    uint32_t ulFlags = WTIMER0->IFC;
+
+    if(ulFlags & WTIMER_IF_OF)
+    {
+        uint32_t ulCompare = ((1.f - fPhaseAngle) * (MAX_PHASE_ANGLE - MIN_PHASE_ANGLE)) + MIN_PHASE_ANGLE;
+
+        WTIMER1->CC[1].CCV = (float)ulCompare / 0.028f;
+        WTIMER1->CC[2].CCV = WTIMER1->CC[1].CCV + ((float)SSR_LATCH_OFFSET / 0.028f);
+    }
+}
 
 // Functions
 void reset()
@@ -65,13 +85,21 @@ void sleep()
 
 uint32_t get_free_ram()
 {
-    void *pCurrentHeap = malloc(1);
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        extern void *_sbrk(int);
 
-    uint32_t ulFreeRAM = (uint32_t)__get_MSP() - (uint32_t)pCurrentHeap;
+        void *pCurrentHeap = _sbrk(1);
 
-    free(pCurrentHeap);
+        if(!pCurrentHeap)
+            return 0;
 
-    return ulFreeRAM;
+        uint32_t ulFreeRAM = (uint32_t)__get_MSP() - (uint32_t)pCurrentHeap;
+
+        _sbrk(-1);
+
+        return ulFreeRAM;
+    }
 }
 
 void get_device_name(char *pszDeviceName, uint32_t ulDeviceNameSize)
@@ -252,7 +280,7 @@ int init()
     emu_init(); // Init EMU
 
     cmu_hfxo_startup_calib(0x200, 0x0FE); // Config HFXO Startup for 1280 uA, 30.036 pF
-    cmu_hfxo_steady_calib(0x00A, 0x0FE); // Config HFXO Steady state for ?? uA, 30.036 pF
+    cmu_hfxo_steady_calib(0x00A, 0x0FE); // Config HFXO Steady state for 20.00 uA, 30.036 pF
 
     cmu_init(); // Inic Clocks
 
@@ -362,12 +390,13 @@ int init()
 }
 int main()
 {
-    CMU->ROUTELOC0 = CMU_ROUTELOC0_CLKOUT0LOC_LOC0;
-    CMU->ROUTEPEN |= CMU_ROUTEPEN_CLKOUT0PEN;
-    CMU->CTRL |= CMU_CTRL_CLKOUTSEL0_HFRCOQ;
+    i2c1_write_byte(MCP9600_I2C_ADDR, MCP9600_REG_ID, I2C_RESTART);
 
-    //i2c1_write_byte(0x76, 0xD0, I2C_RESTART);
-    //DBGPRINTLN_CTX("BME ID %02X", i2c1_read_byte(0x76, I2C_STOP));
+    uint8_t buf[2];
+
+    i2c1_read(MCP9600_I2C_ADDR, buf, 2, I2C_STOP);
+
+    DBGPRINTLN_CTX("MCP9600 ID 0x%02X%02X", buf[0], buf[1]);
 
     // Internal flash test
     DBGPRINTLN_CTX("Initial calibration dump:");
@@ -395,12 +424,79 @@ int main()
     DBGPRINTLN_CTX("0x00100000: %08X", *(volatile uint32_t *)0x00100000);
     */
 
+   // Wide Timer 0 - Capture zero cross
+    CMU->HFPERCLKEN1 |= CMU_HFPERCLKEN1_WTIMER0;
+
+    WTIMER0->CTRL = WTIMER_CTRL_RSSCOIST | WTIMER_CTRL_PRESC_DIV1 | WTIMER_CTRL_CLKSEL_PRESCHFPERCLK | WTIMER_CTRL_FALLA_NONE | WTIMER_CTRL_RISEA_RELOADSTART | WTIMER_CTRL_OSMEN | WTIMER_CTRL_MODE_UP;
+    WTIMER0->TOP = (float)ZEROCROSS_DELAY / 0.028f;
+    WTIMER0->CNT = 0x00000000;
+    WTIMER0->ROUTELOC0 = ((uint32_t)0 << _WTIMER_ROUTELOC0_CC0LOC_SHIFT);
+    WTIMER0->ROUTEPEN |= WTIMER_ROUTEPEN_CC0PEN;
+
+    WTIMER0->CC[0].CTRL = WTIMER_CC_CTRL_FILT_ENABLE | WTIMER_CC_CTRL_INSEL_PIN | WTIMER_CC_CTRL_CUFOA_NONE | WTIMER_CC_CTRL_COFOA_NONE | WTIMER_CC_CTRL_CMOA_NONE | WTIMER_CC_CTRL_MODE_OFF;
+
+    WTIMER0->IFC = _WTIMER_IFC_MASK;
+    WTIMER0->IEN = WTIMER_IEN_OF;
+    IRQ_CLEAR(WTIMER0_IRQn); // Clear pending vector
+    IRQ_SET_PRIO(WTIMER0_IRQn, 0, 0); // Set priority 0,0 (max)
+    IRQ_ENABLE(WTIMER0_IRQn); // Enable vector
+
+    // Wide Timer 1 - Output phase angle control
+    CMU->HFPERCLKEN1 |= CMU_HFPERCLKEN1_WTIMER1;
+
+    WTIMER1->CTRL = WTIMER_CTRL_RSSCOIST | WTIMER_CTRL_PRESC_DIV1 | WTIMER_CTRL_CLKSEL_PRESCHFPERCLK | WTIMER_CTRL_FALLA_NONE | WTIMER_CTRL_RISEA_RELOADSTART | WTIMER_CTRL_OSMEN | WTIMER_CTRL_MODE_UP;
+    WTIMER1->TOP = 0xFFFFFFFF;
+    WTIMER1->CNT = 0x00000000;
+
+    WTIMER1->CC[0].CTRL = WTIMER_CC_CTRL_INSEL_PRS | WTIMER_CC_CTRL_PRSSEL_PRSCH0 | WTIMER_CC_CTRL_CUFOA_NONE | WTIMER_CC_CTRL_COFOA_NONE | WTIMER_CC_CTRL_CMOA_NONE | WTIMER_CC_CTRL_MODE_OFF;
+
+    WTIMER1->CC[1].CTRL = WTIMER_CC_CTRL_PRSCONF_LEVEL | WTIMER_CC_CTRL_CUFOA_NONE | WTIMER_CC_CTRL_COFOA_NONE | WTIMER_CC_CTRL_CMOA_SET | WTIMER_CC_CTRL_MODE_OUTPUTCOMPARE;
+    WTIMER1->CC[1].CCV = (float)7500 / 0.028f;
+
+    WTIMER1->CC[2].CTRL = WTIMER_CC_CTRL_PRSCONF_LEVEL | WTIMER_CC_CTRL_CUFOA_NONE | WTIMER_CC_CTRL_COFOA_NONE | WTIMER_CC_CTRL_CMOA_SET | WTIMER_CC_CTRL_MODE_OUTPUTCOMPARE;
+    WTIMER1->CC[2].CCV = (float)(7500 + SSR_LATCH_OFFSET) / 0.028f;
+
+    // PRS
+    CMU->HFBUSCLKEN0 |= CMU_HFBUSCLKEN0_PRS;
+
+    PRS->CH[0].CTRL = PRS_CH_CTRL_SOURCESEL_WTIMER0 | PRS_CH_CTRL_SIGSEL_WTIMER0OF;
+    PRS->CH[1].CTRL = PRS_CH_CTRL_ANDNEXT | PRS_CH_CTRL_SOURCESEL_WTIMER1 | PRS_CH_CTRL_SIGSEL_WTIMER1CC1;
+    PRS->CH[2].CTRL = PRS_CH_CTRL_INV | PRS_CH_CTRL_SOURCESEL_WTIMER1 | PRS_CH_CTRL_SIGSEL_WTIMER1CC2;
+
+    PRS->ROUTELOC0 |= ((uint32_t)0 << _PRS_ROUTELOC0_CH1LOC_SHIFT); // Output for the SSR
+    PRS->ROUTEPEN |= PRS_ROUTEPEN_CH1PEN;
+
+    PRS->ROUTELOC0 |= PRS_ROUTELOC0_CH0LOC_LOC2; // Output Zero Cross for debug purposes
+    PRS->ROUTEPEN |= PRS_ROUTEPEN_CH0PEN;
+
+    //WTIMER1->CC[1].CCVB = (float)5000 / 0.028f;
+    //WTIMER1->CC[2].CCVB = (float)(5000 + SSR_LATCH_OFFSET) / 0.028f;
+
     while(1)
     {
         GPIO->P[0].DOUT ^= BIT(0);
 
-        delay_ms(500);
+        delay_ms(10);
 
+        static float on = 0.f;
+        static float step = 0.005f;
+
+        if(on >= 1.f)
+        {
+            on = 1.f;
+            step = -step;
+        }
+
+        if(on <= 0.f)
+        {
+            on = 0.f;
+            step = -step;
+        }
+
+        on += step;
+
+        fPhaseAngle = CLAMP(on, 0.f, 1.f);
+/*
         DBGPRINTLN_CTX("ADC Temp: %.2f", adc_get_temperature());
         DBGPRINTLN_CTX("EMU Temp: %.2f", emu_get_temperature());
 
@@ -416,6 +512,7 @@ int main()
         DBGPRINTLN_CTX("RTCC Time: %lu", rtcc_get_time());
 
         DBGPRINTLN_CTX("Big fag does not need debug uart anymore.");
+*/
     }
 
     return 0;

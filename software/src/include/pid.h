@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct pid
+typedef struct pid_t
 {
     float dt;
     float max;
@@ -16,8 +16,8 @@ typedef struct pid
     volatile float setpoint;
     volatile float value;
     volatile float output;
-} PID;
+} pid_t;
 
-void pid_calc(PID *pid);
+void pid_calc(pid_t *pid);
 
-#endif // __PID_H__
+#endif

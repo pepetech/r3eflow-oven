@@ -8,8 +8,8 @@ void gpio_init()
     GPIO->P[0].CTRL   = GPIO_P_CTRL_DRIVESTRENGTHALT_STRONG | (5 << _GPIO_P_CTRL_SLEWRATEALT_SHIFT)
                       | GPIO_P_CTRL_DRIVESTRENGTH_STRONG | (5 << _GPIO_P_CTRL_SLEWRATE_SHIFT);
     GPIO->P[0].MODEL  = GPIO_P_MODEL_MODE0_PUSHPULL  // GPIO - LED
-                      | GPIO_P_MODEL_MODE1_DISABLED
-                      | GPIO_P_MODEL_MODE2_PUSHPULL
+                      | GPIO_P_MODEL_MODE1_PUSHPULL
+                      | GPIO_P_MODEL_MODE2_DISABLED
                       | GPIO_P_MODEL_MODE3_DISABLED
                       | GPIO_P_MODEL_MODE4_DISABLED
                       | GPIO_P_MODEL_MODE5_DISABLED
@@ -65,7 +65,7 @@ void gpio_init()
                       | GPIO_P_MODEH_MODE11_DISABLED
                       | GPIO_P_MODEH_MODE12_DISABLED
                       | GPIO_P_MODEH_MODE13_DISABLED
-                      | GPIO_P_MODEH_MODE14_DISABLED
+                      | GPIO_P_MODEH_MODE14_PUSHPULL
                       | GPIO_P_MODEH_MODE15_DISABLED;
     GPIO->P[2].DOUT   = 0;
     GPIO->P[2].OVTDIS = 0;
@@ -99,7 +99,7 @@ void gpio_init()
                       | GPIO_P_MODEL_MODE1_DISABLED
                       | GPIO_P_MODEL_MODE2_DISABLED
                       | GPIO_P_MODEL_MODE3_DISABLED
-                      | GPIO_P_MODEL_MODE4_DISABLED
+                      | GPIO_P_MODEL_MODE4_INPUTPULL
                       | GPIO_P_MODEL_MODE5_DISABLED
                       | GPIO_P_MODEL_MODE6_DISABLED
                       | GPIO_P_MODEL_MODE7_DISABLED;
@@ -111,7 +111,7 @@ void gpio_init()
                       | GPIO_P_MODEH_MODE13_DISABLED
                       | GPIO_P_MODEH_MODE14_DISABLED
                       | GPIO_P_MODEH_MODE15_DISABLED;
-    GPIO->P[4].DOUT   = 0;
+    GPIO->P[4].DOUT   = BIT(4);
     GPIO->P[4].OVTDIS = 0;
 
     // Port F
@@ -140,4 +140,6 @@ void gpio_init()
     GPIO->ROUTEPEN &= ~(GPIO_ROUTEPEN_TDIPEN | GPIO_ROUTEPEN_TDOPEN); // Disable JTAG
     GPIO->ROUTEPEN |= GPIO_ROUTEPEN_SWVPEN; // Enable SWO
     GPIO->ROUTELOC0 = GPIO_ROUTELOC0_SWVLOC_LOC0; // SWO on PF2
+
+    // External interrupts
 }

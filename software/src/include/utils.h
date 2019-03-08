@@ -45,4 +45,9 @@
 #define UINT322BITSTR(b)    UINT162BITSTR(((b) >> 16) & 0xFFFF), UINT162BITSTR(((b) >> 0) & 0xFFFF)
 #define UINT642BITSTR(b)    UINT322BITSTR(((b) >> 32) & 0xFFFFFFFF), UINT322BITSTR(((b) >> 0) & 0xFFFFFFFF)
 
+// Clamping utilities
+#define MIN(x, y)           ((x) < (y) ? (x) : (y))
+#define MAX(x, y)           ((x) > (y) ? (x) : (y))
+#define CLAMP(x, min, max)  MIN(max, MAX(x, min))
+
 #endif

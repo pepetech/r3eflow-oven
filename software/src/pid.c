@@ -1,6 +1,6 @@
 #include "pid.h"
 
-void pid_calc(PID * pid)
+void pid_calc(pid_t * pid)
 {
     // Calculate error
     float error = pid->setpoint - pid->value;
