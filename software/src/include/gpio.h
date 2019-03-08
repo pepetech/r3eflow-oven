@@ -10,4 +10,4 @@
 
 void gpio_init();
 
-#endif
+#endif  // __GPIO_H__

@@ -82,4 +82,4 @@ static inline uint8_t i2c2_read_byte(uint8_t ubAddress, uint8_t ubStop)
 }
 
 
-#endif
+#endif	// __I2C_H__

@@ -6,4 +6,4 @@
 void trng_init();
 uint32_t trng_pop_random();
 
-#endif
+#endif  // __TRNG_H__

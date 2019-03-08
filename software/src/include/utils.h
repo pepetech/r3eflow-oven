@@ -50,4 +50,4 @@
 #define MAX(x, y)           ((x) > (y) ? (x) : (y))
 #define CLAMP(x, min, max)  MIN(max, MAX(x, min))
 
-#endif
+#endif  // __UTILS_H__

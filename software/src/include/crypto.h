@@ -16,4 +16,4 @@ void crypto_init();
 void crypto_sha256(uint8_t *pubData, uint64_t ullDataSize, uint8_t pubDigest[32]);
 void crypto_sha1(uint8_t *pubData, uint64_t ullDataSize, uint8_t pubDigest[20]);
 
-#endif
+#endif  // __CRYPTO_H__

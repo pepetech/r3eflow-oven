@@ -8,4 +8,4 @@
 void crc_init();
 uint32_t calc_crc32(uint8_t *pData, uint32_t ulSize);
 
-#endif
+#endif  // __CRC_H__

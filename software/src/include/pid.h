@@ -18,6 +18,8 @@ typedef struct
     volatile float fOutput;
 } pid_t;
 
+pid_t pid_init(float fMax, float fMin, float fKp, float fKd, float fKi);
+
 void pid_calc(pid_t *pPID);
 
-#endif
+#endif  //__PID_H__

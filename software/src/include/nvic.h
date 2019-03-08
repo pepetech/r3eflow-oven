@@ -12,4 +12,4 @@
 #define IRQ_STATUS(i)           (NVIC->ISER[i >> 5] & (1 << (i & 0x1F)))
 #define IRQ_PENDING(i)          (NVIC->ISPR[i >> 5] & (1 << (i & 0x1F)))
 
-#endif
+#endif  // __NVIC_H__

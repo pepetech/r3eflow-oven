@@ -11,4 +11,4 @@ float adc_get_iovdd();
 float adc_get_corevdd();
 float adc_get_temperature();
 
-#endif
+#endif  // __ADC_H__

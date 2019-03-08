@@ -13,4 +13,4 @@ void dbg_swo_send_uint8(uint8_t ubData, uint8_t ubChannel);
 void dbg_swo_send_uint16(uint16_t usData, uint8_t ubChannel);
 void dbg_swo_send_uint32(uint32_t ulData, uint8_t ubChannel);
 
-#endif
+#endif  // __DBG_H__

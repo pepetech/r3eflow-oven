@@ -33,4 +33,4 @@ void msc_flash_page_erase(uint32_t ulAddress);
 void msc_flash_page_write(uint32_t ulAddress, uint8_t *pubData, uint32_t ulSize);
 void msc_flash_word_write(uint32_t ulAddress, uint32_t ulData);
 
-#endif
+#endif  // __MSC_H__

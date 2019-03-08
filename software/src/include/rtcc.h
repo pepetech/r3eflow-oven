@@ -10,4 +10,4 @@ uint32_t rtcc_get_time();
 void rtcc_set_time(uint32_t ulTime);
 void rtcc_set_alarm(uint32_t ulAlarm);
 
-#endif
+#endif  // __RTCC_H__

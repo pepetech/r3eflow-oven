@@ -18,4 +18,4 @@ void emu_vmon_altavdd_config(uint8_t ubEnable, float fLowThresh, float *pfLowThr
 void emu_vmon_dvdd_config(uint8_t ubEnable, float fLowThresh, float *pfLowThresh);
 void emu_vmon_iovdd_config(uint8_t ubEnable, float fLowThresh, float *pfLowThresh);
 
-#endif
+#endif  // __EMU_H__

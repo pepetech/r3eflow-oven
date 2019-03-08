@@ -18,4 +18,4 @@
 #define FNBDBGPRINTLN(FN, FORMAT, ...) FN(FORMAT "\r\n", ##__VA_ARGS__)
 #define FNBDBGPRINT(FN, FORMAT, ...) FN(FORMAT, ##__VA_ARGS__)
 
-#endif
+#endif  // __DEBUG_MACROS_H__
