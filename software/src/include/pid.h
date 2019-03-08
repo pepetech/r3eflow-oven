@@ -1,19 +1,23 @@
+#ifndef __PID_H__
+#define __PID_H__
 
 #include <stdint.h>
 
 typedef struct pid
 {
-    double _dt;
-    double _max;
-    double _min;
-    double _Kp;
-    double _Kd;
-    double _Ki;
-    double _pre_error;
-    double _integral;
-    double _setpoint;
-    double _value;
-    double _output;
+    float dt;
+    float max;
+    float min;
+    float Kp;
+    float Kd;
+    float Ki;
+    float pre_error;
+    float integral;
+    volatile float setpoint;
+    volatile float value;
+    volatile float output;
 } PID;
 
-void calc_pid(PID * pid);
+void pid_calc(PID *pid);
+
+#endif // __PID_H__

@@ -1,30 +1,28 @@
 #include "pid.h"
 
-void calc_pid(PID * pid)
+void pid_calc(PID * pid)
 {
-        // Calculate error
-    double error = (*pid)._setpoint - (*pid)._value;
+    // Calculate error
+    float error = pid->setpoint - pid->value;
 
     // Proportional term
-    double Pout = (*pid)._Kp * error;
+    float Pout = pid->Kp * error;
 
     // Integral term
-    (*pid)._integral += error * (*pid)._dt;
-    double Iout = (*pid)._Ki * (*pid)._integral;
+    pid->integral += error * pid->dt;
+    float Iout = pid->Ki * pid->integral;
 
     // Derivative term
-    double derivative = (error - (*pid)._pre_error) / (*pid)._dt;
-    double Dout = (*pid)._Kd * derivative;
+    float derivative = (error - pid->pre_error) / pid->dt;
+    float Dout = pid->Kd * derivative;
 
     // Calculate total output
-    (*pid)._output = Pout + Iout + Dout;
+    pid->output = Pout + Iout + Dout;
 
     // Restrict to max/min
-    if( (*pid)._output > (*pid)._max )
-        (*pid)._output = (*pid)._max;
-    else if( (*pid)._output < (*pid)._min )
-        (*pid)._output = (*pid)._min;
+    if(pid->output > pid->max) pid->output = pid->max;
+    else if(pid->output < pid->min) pid->output = pid->min;
 
     // Save error to previous error
-    (*pid)._pre_error = error;
+    pid->pre_error = error;
 }
