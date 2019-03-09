@@ -374,7 +374,28 @@ int main()
     // PID initialization
     pOvenPID->fSetpoint = 100.f;
 
-    // Wide Timer 0 - Capture zero cross
+    /*
+        Function description:
+
+        ZEROCROSS = Rising edge of the zero cross detector (goes high when the wave is about to cross, not after)
+        WTIMER0_OF = Goes high ZEROCROSS_DELAY microseconds after ZEROCROSS
+        PRS_CH0 = Generates a pulse when WTIMER0_OF goes high
+        WTIMER1_CC1 = Goes low ZEROCROSS_DELAY microseconds after ZEROCROSS, goes high when the TRIAC should be turned on
+        WTIMER1_CC2 = Goes low ZEROCROSS_DELAY microseconds after ZEROCROSS, goes high when the TRIAC should be turned off
+        PRS_CH1 = Follows WTIMER1_CC1 and ANDs it with PRS_CH2
+        PRS_CH2 = Follows WTIMER1_CC2 and inverts it
+        TRIAC_OUT = TRIAC control signal
+
+        --------------------------
+
+        ZEROCROSS -> Trigger WTIMER0_CC0 -> Start WTIMER0
+        WTIMER0_OF -> Pulse PRS_CH0 -> Trigger WTIMER1_CC0 -> Start WTIMER1
+        WTIMER1_CC1 -> Level PRS_CH1 -------->
+                                            -> AND -> TRIAC_OUT
+        WTIMER1_CC2 -> Level PRS_CH2 -> NOT ->
+    */
+
+    // Wide Timer 0 - Delay zero cross
     CMU->HFPERCLKEN1 |= CMU_HFPERCLKEN1_WTIMER0;
 
     WTIMER0->CTRL = WTIMER_CTRL_RSSCOIST | WTIMER_CTRL_PRESC_DIV1 | WTIMER_CTRL_CLKSEL_PRESCHFPERCLK | WTIMER_CTRL_FALLA_NONE | WTIMER_CTRL_RISEA_RELOADSTART | WTIMER_CTRL_OSMEN | WTIMER_CTRL_MODE_UP;
