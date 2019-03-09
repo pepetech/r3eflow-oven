@@ -223,7 +223,7 @@ int init()
     cmu_hfxo_startup_calib(0x200, 0x0FE); // Config HFXO Startup for 1280 uA, 30.036 pF
     cmu_hfxo_steady_calib(0x00A, 0x0FE); // Config HFXO Steady state for 20.00 uA, 30.036 pF
 
-    cmu_init(); // Inic Clocks
+    cmu_init(); // Init Clocks
 
     cmu_ushfrco_calib(1, USHFRCO_CALIB_8M, 8000000); // Enable and calibrate USHFRCO for 8 MHz
     cmu_auxhfrco_calib(1, AUXHFRCO_CALIB_32M, 32000000); // Enable and calibrate AUXHFRCO for 32 MHz
