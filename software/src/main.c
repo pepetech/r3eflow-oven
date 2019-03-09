@@ -46,7 +46,7 @@ static uint16_t get_device_revision();
 
 // Variables
 static volatile float fPhaseAngle = 0.f;
-static volatile pid_t ovenPid;
+pid_t ovenPid;
 
 // ISRs
 void _wtimer0_isr()
@@ -455,7 +455,7 @@ int main()
 
             ovenPid.fDeltaTime = g_ullSystemTick - last_pid_updt;
             ovenPid.fValue = temp;
-            pid_calc((pid_t*)&ovenPid);
+            pid_calc(&ovenPid);
 
             DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - last_pid_updt);
             DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", temp);
