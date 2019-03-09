@@ -46,7 +46,7 @@ static uint16_t get_device_revision();
 
 // Variables
 static volatile float fPhaseAngle = 0.f;
-static volatile pid_t *pOvenPID = NULL;
+static pid_t *pOvenPID = NULL;
 
 // ISRs
 void _wtimer0_isr()
@@ -55,10 +55,7 @@ void _wtimer0_isr()
 
     if(ulFlags & WTIMER_IF_OF)
     {
-        //uint32_t ulCompare = ((1.f - fPhaseAngle) * (MAX_PHASE_ANGLE - MIN_PHASE_ANGLE)) + MIN_PHASE_ANGLE;
-
-        //WTIMER1->CC[1].CCV = (float)ulCompare / 0.028f;
-        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - g_usPacLookup[(uint16_t)pOvenPID->fOutput]) / 0.028f;
+        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - CLAMP(g_usPacLookup[(uint16_t)pOvenPID->fOutput], MIN_PHASE_ANGLE, MAX_PHASE_ANGLE)) / 0.028f;
         WTIMER1->CC[2].CCV = WTIMER1->CC[1].CCV + ((float)SSR_LATCH_OFFSET / 0.028f);
     }
 }
@@ -332,7 +329,7 @@ int init()
     else
         DBGPRINTLN_CTX("MCP9600 init NOK!");
 
-    pOvenPID = pid_init(MAX_PHASE_ANGLE, MIN_PHASE_ANGLE, PID_KP, PID_KI, PID_KD);
+    pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_KP, PID_KI, PID_KD);
 
     if(pOvenPID)
         DBGPRINTLN_CTX("Oven PID init OK!");

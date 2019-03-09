@@ -21,6 +21,7 @@ pid_t* pid_init(float fMax, float fMin, float fKp, float fKi, float fKd)
 
     return pPID;
 }
+
 void pid_free(pid_t *pPID)
 {
     if(!pPID)
