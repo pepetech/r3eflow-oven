@@ -1,21 +1,18 @@
 #include "pid.h"
 
-pid_t pid_init(float fMin, float fMax, float fKp, float fKd, float fKi)
+void pid_init(pid_t *pPid ,float fMin, float fMax, float fKp, float fKd, float fKi)
 {
-    pid_t sPID = {
-        .fDeltaTime = 0,
-        .fMax = fMax,
-        .fMin = fMin,
-        .fKp = fKp,
-        .fKd = fKd,
-        .fKi = fKi,
-        .fPreviousError = 0,
-        .fIntegral = 0,
-        .fSetpoint = 0,
-        .fValue = 0,
-        .fOutput = fMin };
-
-    return sPID;
+    pPid->fDeltaTime = 0;
+    pPid->fMax = fMax;
+    pPid->fMin = fMin;
+    pPid->fKp = fKp;
+    pPid->fKd = fKd;
+    pPid->fKi = fKi;
+    pPid->fPreviousError = 0;
+    pPid->fIntegral = 0;
+    pPid->fSetpoint = 0;
+    pPid->fValue = 0;
+    pPid->fOutput = fMin;
 }
 
 void pid_calc(pid_t *pPID)
