@@ -129,9 +129,7 @@ uint8_t mcp9600_get_config();
 
 void mcp9600_set_alert_config(uint8_t ubAlert, uint8_t ubConfig);
 uint8_t mcp9600_get_alert_config(uint8_t ubAlert);
-
 void mcp9600_set_alert_hysteresis(uint8_t ubAlert, uint8_t ubHysteresis);
-
 void mcp9600_set_alert_limit(uint8_t ubAlert, float dLimit);
 
 #endif  // __MCP9600_H__

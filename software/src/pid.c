@@ -1,25 +1,39 @@
 #include "pid.h"
 
-pid_t pid_init(float fMax, float fMin, float fKp, float fKd, float fKi)
+pid_t* pid_init(float fMax, float fMin, float fKp, float fKi, float fKd)
 {
-    pid_t sPID = {
-        .fDeltaTime = 0,
-        .fMax = fMax,
-        .fMin = fMin,
-        .fKp = fKp,
-        .fKd = fKd,
-        .fKi = fKi,
-        .fPreviousError = 0,
-        .fIntegral = 0,
-        .fSetpoint = 0,
-        .fValue = 0,
-        .fOutput = fMin };
+    pid_t *pPID = (pid_t *)malloc(sizeof(pid_t));
 
-    return sPID;
+    if(!pPID)
+        return NULL;
+
+    pPID->fDeltaTime = 0.f;
+    pPID->fMax = fMax;
+    pPID->fMin = fMin;
+    pPID->fKp = fKp;
+    pPID->fKi = fKi;
+    pPID->fKd = fKd;
+    pPID->fPreviousError = 0.f;
+    pPID->fIntegral = 0.f;
+    pPID->fSetpoint = 0.f;
+    pPID->fValue = 0.f;
+    pPID->fOutput = fMin;
+
+    return pPID;
+}
+void pid_free(pid_t *pPID)
+{
+    if(!pPID)
+        return;
+
+    free(pPID);
 }
 
 void pid_calc(pid_t *pPID)
 {
+    if(!pPID)
+        return;
+
     // Calculate error
     float fError = pPID->fSetpoint - pPID->fValue;
 
@@ -37,10 +51,9 @@ void pid_calc(pid_t *pPID)
     // Calculate total output
     pPID->fOutput = fProportional + fIntegral + fDerivative;
 
-    // Restrict to max/min
-    if(pPID->fOutput > pPID->fMax) pPID->fOutput = pPID->fMax;
-    else if(pPID->fOutput < pPID->fMin) pPID->fOutput = pPID->fMin;
+    // Clamp
+    pPID->fOutput = CLAMP(pPID->fOutput, pPID->fMin, pPID->fMax);
 
-    // Save error to previous error
+    // Save error to differentiate
     pPID->fPreviousError = fError;
 }

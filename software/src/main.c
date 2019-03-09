@@ -28,9 +28,9 @@
 #define MAX_PHASE_ANGLE     (PHASE_ANGLE_WIDTH - ZEROCROSS_DEADTIME)
 #define MIN_PHASE_ANGLE     (2 * SSR_LATCH_OFFSET)
 
-#define PID_KP  1    // pid proportional gain
-#define PID_KD  0    // pid derivative gain
-#define PID_KI  0       // pid integration gain
+#define PID_KP  1    // PID Proportional gain
+#define PID_KI  0    // PID Integration gain
+#define PID_KD  0    // PID Derivative gain
 
 // Structs
 
@@ -45,7 +45,7 @@ static uint16_t get_device_revision();
 
 // Variables
 static volatile float fPhaseAngle = 0.f;
-static volatile pid_t ovenPid;
+static volatile pid_t *pOvenPID = NULL;
 
 // ISRs
 void _wtimer0_isr()
@@ -57,7 +57,7 @@ void _wtimer0_isr()
         //uint32_t ulCompare = ((1.f - fPhaseAngle) * (MAX_PHASE_ANGLE - MIN_PHASE_ANGLE)) + MIN_PHASE_ANGLE;
 
         //WTIMER1->CC[1].CCV = (float)ulCompare / 0.028f;
-        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - ovenPid.fOutput) / 0.028f;
+        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - pOvenPID->fOutput) / 0.028f;
         WTIMER1->CC[2].CCV = WTIMER1->CC[1].CCV + ((float)SSR_LATCH_OFFSET / 0.028f);
     }
 }
@@ -395,6 +395,18 @@ int init()
             DBGPRINTLN_CTX("  Address 0x%02X ACKed!", a);
     }
 
+    if(mcp9600_init())
+        DBGPRINTLN_CTX("MCP9600 init OK!");
+    else
+        DBGPRINTLN_CTX("MCP9600 init NOK!");
+
+    pOvenPID = pid_init(MAX_PHASE_ANGLE, MIN_PHASE_ANGLE, PID_KP, PID_KI, PID_KD);
+
+    if(pOvenPID)
+        DBGPRINTLN_CTX("Oven PID init OK!");
+    else
+        DBGPRINTLN_CTX("Oven PID init NOK!");
+
     return 0;
 }
 int main()
@@ -427,11 +439,10 @@ int main()
     DBGPRINTLN_CTX("0x00100000: %08X", *(volatile uint32_t *)0x00100000);
     */
 
-   // PID initialization
-   ovenPid = pid_init(MAX_PHASE_ANGLE, MIN_PHASE_ANGLE, PID_KP, PID_KD, PID_KI);
-   ovenPid.fSetpoint = 100.f;
+    // PID initialization
+    pOvenPID->fSetpoint = 100.f;
 
-   // Wide Timer 0 - Capture zero cross
+    // Wide Timer 0 - Capture zero cross
     CMU->HFPERCLKEN1 |= CMU_HFPERCLKEN1_WTIMER0;
 
     WTIMER0->CTRL = WTIMER_CTRL_RSSCOIST | WTIMER_CTRL_PRESC_DIV1 | WTIMER_CTRL_CLKSEL_PRESCHFPERCLK | WTIMER_CTRL_FALLA_NONE | WTIMER_CTRL_RISEA_RELOADSTART | WTIMER_CTRL_OSMEN | WTIMER_CTRL_MODE_UP;
@@ -442,11 +453,11 @@ int main()
 
     WTIMER0->CC[0].CTRL = WTIMER_CC_CTRL_FILT_ENABLE | WTIMER_CC_CTRL_INSEL_PIN | WTIMER_CC_CTRL_CUFOA_NONE | WTIMER_CC_CTRL_COFOA_NONE | WTIMER_CC_CTRL_CMOA_NONE | WTIMER_CC_CTRL_MODE_OFF;
 
-    WTIMER0->IFC = _WTIMER_IFC_MASK;
-    WTIMER0->IEN = WTIMER_IEN_OF;
+    WTIMER0->IFC = _WTIMER_IFC_MASK; // Clear all flags
     IRQ_CLEAR(WTIMER0_IRQn); // Clear pending vector
     IRQ_SET_PRIO(WTIMER0_IRQn, 0, 0); // Set priority 0,0 (max)
     IRQ_ENABLE(WTIMER0_IRQn); // Enable vector
+    WTIMER0->IEN = WTIMER_IEN_OF; // Enable OF flag
 
     // Wide Timer 1 - Output phase angle control
     CMU->HFPERCLKEN1 |= CMU_HFPERCLKEN1_WTIMER1;
@@ -476,22 +487,19 @@ int main()
     PRS->ROUTELOC0 |= PRS_ROUTELOC0_CH0LOC_LOC2; // Output Zero Cross for debug purposes
     PRS->ROUTEPEN |= PRS_ROUTEPEN_CH0PEN;
 
-    //WTIMER1->CC[1].CCVB = (float)5000 / 0.028f;
-    //WTIMER1->CC[2].CCVB = (float)(5000 + SSR_LATCH_OFFSET) / 0.028f;
-
     while(1)
     {
-        static uint64_t last_blinky = 0;
-        if(g_ullSystemTick > (last_blinky + 500))
+        static uint64_t ullLastBlink = 0;
+        if(g_ullSystemTick > (ullLastBlink + 500))
         {
-            last_blinky = g_ullSystemTick;
             GPIO->P[0].DOUT ^= BIT(0);
+
+            ullLastBlink = g_ullSystemTick;
         }
 
-        static uint64_t last_sweep = 0;
-        if(g_ullSystemTick > (last_sweep + 500))
+        static uint64_t ullLastSweep = 0;
+        if(g_ullSystemTick > (ullLastSweep + 500))
         {
-            last_sweep = g_ullSystemTick;
             static float on = 0.f;
             static float step = 0.005f;
 
@@ -510,27 +518,31 @@ int main()
             on += step;
 
             fPhaseAngle = CLAMP(on, 0.f, 1.f);
+
+            ullLastSweep = g_ullSystemTick;
         }
 
-        static uint64_t last_pid_updt = 0;
-        if(mcp9600_get_status() &  MCP9600_TH_UPDT)
+        static uint64_t ullLastPIDUpdate = 0;
+        if(mcp9600_get_status() & MCP9600_TH_UPDT)
         {
             float temp = mcp9600_get_hj_temp();
 
             mcp9600_set_status(0x00);
 
-            last_pid_updt = g_ullSystemTick;
+            pOvenPID->fDeltaTime = g_ullSystemTick - ullLastPIDUpdate;
+            pOvenPID->fValue = temp;
 
-            ovenPid.fDeltaTime = g_ullSystemTick - last_pid_updt;
-            ovenPid.fValue = temp;
-            pid_calc((pid_t*)&ovenPid);
+            pid_calc(pOvenPID);
 
-            DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - last_pid_updt);
+            DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - ullLastPIDUpdate);
             DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", temp);
-            DBGPRINTLN_CTX("PID - temp target %.3f C", ovenPid.fSetpoint);
-            DBGPRINTLN_CTX("PID - output %f %%", ovenPid.fOutput);
+            DBGPRINTLN_CTX("PID - temp target %.3f C", pOvenPID->fSetpoint);
+            DBGPRINTLN_CTX("PID - output %f %%", pOvenPID->fOutput);
+
+            ullLastPIDUpdate = g_ullSystemTick;
         }
-/*
+
+        /*
         DBGPRINTLN_CTX("ADC Temp: %.2f", adc_get_temperature());
         DBGPRINTLN_CTX("EMU Temp: %.2f", emu_get_temperature());
 
@@ -546,7 +558,7 @@ int main()
         DBGPRINTLN_CTX("RTCC Time: %lu", rtcc_get_time());
 
         DBGPRINTLN_CTX("Big fag does not need debug uart anymore.");
-*/
+        */
     }
 
     return 0;
