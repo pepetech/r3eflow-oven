@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 
     // ac wave sample buffer
     fp = fopen("wave.txt", "w+");
-    fprintf(fp, "double const ac_sine[] = {");
+    fprintf(fp, "static cosnt double fAcSine[%d] = {", samples+1);
     ac_sine[0] = 0.0f;
     fprintf(fp, "%.7ff", ac_sine[0]);
     for(uint16_t i = 1; i <= samples; i++)
@@ -74,14 +74,14 @@ int main(int argc, char *argv[])
         ac_sine[i] = (sin(2.f*PI*50.f*((0.02f/(float)samples)/2.f)*i));
         fprintf(fp, ", %.7ff", ac_sine[i]);
     }
-    fprintf(fp, "}");
+    fprintf(fp, "};");
     fclose(fp);
 
 
     // rms sample buffer
     double sum;
     fp = fopen("rms.txt", "w+");
-    fprintf(fp,"double const rms[] = {");
+    fprintf(fp,"static const double fRms[%d] = {", samples+1);
     sum += ac_sine[0] * ac_sine[0];
     rms[0] = sqrt(sum / samples);
     fprintf(fp,"%.7ff", rms[0]);
@@ -91,38 +91,32 @@ int main(int argc, char *argv[])
         rms[i] = sqrt(sum / samples);
         fprintf(fp, ", %.7ff", rms[i]);
     }
-    fprintf(fp,"}");
+    fprintf(fp,"};");
     fclose(fp);
 
     // val sample buffer
     uint16_t val = 0;
     fp = fopen("out.txt", "w+");
-    fprintf(fp, "uint16_t const lookup[] = {");
+    fprintf(fp, "static const uin16_t usPacLookup[%d] = {", samples+1);
     lookup[0] = min;
     fprintf(fp, "%d", lookup[0]);
     for(uint16_t i = 1; i <= samples; i++)
     {
-        float fTarget = (i*(1/sqrt(2)) / (float)samples);
-        if (fTarget < min)
+        float fTarget;
+        fTarget = (i*(1/sqrt(2)) / (float)samples);
+
+        while(fTarget > rms[val])
         {
-            lookup[i] = min;
+            if(val == samples) break;
+            val++;
         }
-        if (fTarget > max)
-        {
-            lookup[i] = max;
-        }
-        else
-        {
-            while(fTarget > rms[val])
-            {
-                if(val == samples) break;
-                val++;
-            }
-            lookup[i] = val;
-        }
-        fprintf(fp, ", %d", lookup[i]);
+        if(val < min) val = min;
+        if(val > max) val = max;
+        lookup[i] = val;
+        if(i % 30) fprintf(fp, ", %d", lookup[i]);
+        else fprintf(fp, ",\n%d", lookup[i]);
     }
-    fprintf(fp, "}");
+    fprintf(fp, "};");
     fclose(fp);
 
     return 0;

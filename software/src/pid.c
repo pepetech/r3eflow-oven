@@ -1,6 +1,6 @@
 #include "pid.h"
 
-pid_t pid_init(float fMax, float fMin, float fKp, float fKd, float fKi)
+pid_t pid_init(float fMin, float fMax, float fKp, float fKd, float fKi)
 {
     pid_t sPID = {
         .fDeltaTime = 0,
