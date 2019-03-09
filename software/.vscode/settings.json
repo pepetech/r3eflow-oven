@@ -20,7 +20,8 @@
         "efm32gg11b820f2048gq100.h": "c",
         "core_cm4.h": "c",
         "atomic.h": "c",
-        "utils.h": "c"
+        "utils.h": "c",
+        "pid.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }
