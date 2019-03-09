@@ -3,7 +3,7 @@
 
 uint8_t mcp9600_init()
 {
-	if(!i2c2_write(MCP9600_I2C_ADDR, 0, 0, 1)) // Check ACK from the expected address
+	if(!i2c1_write(MCP9600_I2C_ADDR, 0, 0, 1)) // Check ACK from the expected address
 		return 0;
 
     return 1;
