@@ -45,7 +45,7 @@ void get_device_name(char *pszDeviceName, uint32_t ulDeviceNameSize);
 static uint16_t get_device_revision();
 
 // Variables
-static volatile float fPhaseAngle = 0.f;
+// static volatile float fPhaseAngle = 0.f;
 static pid_t *pOvenPID = NULL;
 
 // ISRs
@@ -114,61 +114,64 @@ void get_device_name(char *pszDeviceName, uint32_t ulDeviceNameSize)
     uint8_t ubFamily = (DEVINFO->PART & _DEVINFO_PART_DEVICE_FAMILY_MASK) >> _DEVINFO_PART_DEVICE_FAMILY_SHIFT;
     const char* szFamily = "?";
 
-    if(ubFamily == 0x10) szFamily = "EFR32MG1P";
-    else if(ubFamily == 0x11) szFamily = "EFR32MG1B";
-    else if(ubFamily == 0x12) szFamily = "EFR32MG1V";
-    else if(ubFamily == 0x13) szFamily = "EFR32BG1P";
-    else if(ubFamily == 0x14) szFamily = "EFR32BG1B";
-    else if(ubFamily == 0x15) szFamily = "EFR32BG1V";
-    else if(ubFamily == 0x19) szFamily = "EFR32FG1P";
-    else if(ubFamily == 0x1A) szFamily = "EFR32FG1B";
-    else if(ubFamily == 0x1B) szFamily = "EFR32FG1V";
-    else if(ubFamily == 0x1C) szFamily = "EFR32MG12P";
-    else if(ubFamily == 0x1D) szFamily = "EFR32MG12B";
-    else if(ubFamily == 0x1E) szFamily = "EFR32MG12V";
-    else if(ubFamily == 0x1F) szFamily = "EFR32BG12P";
-    else if(ubFamily == 0x20) szFamily = "EFR32BG12B";
-    else if(ubFamily == 0x21) szFamily = "EFR32BG12V";
-    else if(ubFamily == 0x25) szFamily = "EFR32FG12P";
-    else if(ubFamily == 0x26) szFamily = "EFR32FG12B";
-    else if(ubFamily == 0x27) szFamily = "EFR32FG12V";
-    else if(ubFamily == 0x28) szFamily = "EFR32MG13P";
-    else if(ubFamily == 0x29) szFamily = "EFR32MG13B";
-    else if(ubFamily == 0x2A) szFamily = "EFR32MG13V";
-    else if(ubFamily == 0x2B) szFamily = "EFR32BG13P";
-    else if(ubFamily == 0x2C) szFamily = "EFR32BG13B";
-    else if(ubFamily == 0x2D) szFamily = "EFR32BG13V";
-    else if(ubFamily == 0x2E) szFamily = "EFR32ZG13P";
-    else if(ubFamily == 0x31) szFamily = "EFR32FG13P";
-    else if(ubFamily == 0x32) szFamily = "EFR32FG13B";
-    else if(ubFamily == 0x33) szFamily = "EFR32FG13V";
-    else if(ubFamily == 0x34) szFamily = "EFR32MG14P";
-    else if(ubFamily == 0x35) szFamily = "EFR32MG14B";
-    else if(ubFamily == 0x36) szFamily = "EFR32MG14V";
-    else if(ubFamily == 0x37) szFamily = "EFR32BG14P";
-    else if(ubFamily == 0x38) szFamily = "EFR32BG14B";
-    else if(ubFamily == 0x39) szFamily = "EFR32BG14V";
-    else if(ubFamily == 0x3A) szFamily = "EFR32ZG14P";
-    else if(ubFamily == 0x3D) szFamily = "EFR32FG14P";
-    else if(ubFamily == 0x3E) szFamily = "EFR32FG14B";
-    else if(ubFamily == 0x3F) szFamily = "EFR32FG14V";
-    else if(ubFamily == 0x47) szFamily = "EFM32G";
-    else if(ubFamily == 0x48) szFamily = "EFM32GG";
-    else if(ubFamily == 0x49) szFamily = "EFM32TG";
-    else if(ubFamily == 0x4A) szFamily = "EFM32LG";
-    else if(ubFamily == 0x4B) szFamily = "EFM32WG";
-    else if(ubFamily == 0x4C) szFamily = "EFM32ZG";
-    else if(ubFamily == 0x4D) szFamily = "EFM32HG";
-    else if(ubFamily == 0x51) szFamily = "EFM32PG1B";
-    else if(ubFamily == 0x53) szFamily = "EFM32JG1B";
-    else if(ubFamily == 0x55) szFamily = "EFM32PG12B";
-    else if(ubFamily == 0x57) szFamily = "EFM32JG12B";
-    else if(ubFamily == 0x64) szFamily = "EFM32GG11B";
-    else if(ubFamily == 0x67) szFamily = "EFM32TG11B";
-    else if(ubFamily == 0x6A) szFamily = "EFM32GG12B";
-    else if(ubFamily == 0x78) szFamily = "EZR32LG";
-    else if(ubFamily == 0x79) szFamily = "EZR32WG";
-    else if(ubFamily == 0x7A) szFamily = "EZR32HG";
+    switch(ubFamily)
+    {
+        case 0x10: szFamily = "EFR32MG1P";  break;
+        case 0x11: szFamily = "EFR32MG1B";  break;
+        case 0x12: szFamily = "EFR32MG1V";  break;
+        case 0x13: szFamily = "EFR32BG1P";  break;
+        case 0x14: szFamily = "EFR32BG1B";  break;
+        case 0x15: szFamily = "EFR32BG1V";  break;
+        case 0x19: szFamily = "EFR32FG1P";  break;
+        case 0x1A: szFamily = "EFR32FG1B";  break;
+        case 0x1B: szFamily = "EFR32FG1V";  break;
+        case 0x1C: szFamily = "EFR32MG12P"; break;
+        case 0x1D: szFamily = "EFR32MG12B"; break;
+        case 0x1E: szFamily = "EFR32MG12V"; break;
+        case 0x1F: szFamily = "EFR32BG12P"; break;
+        case 0x20: szFamily = "EFR32BG12B"; break;
+        case 0x21: szFamily = "EFR32BG12V"; break;
+        case 0x25: szFamily = "EFR32FG12P"; break;
+        case 0x26: szFamily = "EFR32FG12B"; break;
+        case 0x27: szFamily = "EFR32FG12V"; break;
+        case 0x28: szFamily = "EFR32MG13P"; break;
+        case 0x29: szFamily = "EFR32MG13B"; break;
+        case 0x2A: szFamily = "EFR32MG13V"; break;
+        case 0x2B: szFamily = "EFR32BG13P"; break;
+        case 0x2C: szFamily = "EFR32BG13B"; break;
+        case 0x2D: szFamily = "EFR32BG13V"; break;
+        case 0x2E: szFamily = "EFR32ZG13P"; break;
+        case 0x31: szFamily = "EFR32FG13P"; break;
+        case 0x32: szFamily = "EFR32FG13B"; break;
+        case 0x33: szFamily = "EFR32FG13V"; break;
+        case 0x34: szFamily = "EFR32MG14P"; break;
+        case 0x35: szFamily = "EFR32MG14B"; break;
+        case 0x36: szFamily = "EFR32MG14V"; break;
+        case 0x37: szFamily = "EFR32BG14P"; break;
+        case 0x38: szFamily = "EFR32BG14B"; break;
+        case 0x39: szFamily = "EFR32BG14V"; break;
+        case 0x3A: szFamily = "EFR32ZG14P"; break;
+        case 0x3D: szFamily = "EFR32FG14P"; break;
+        case 0x3E: szFamily = "EFR32FG14B"; break;
+        case 0x3F: szFamily = "EFR32FG14V"; break;
+        case 0x47: szFamily = "EFM32G";     break;
+        case 0x48: szFamily = "EFM32GG";    break;
+        case 0x49: szFamily = "EFM32TG";    break;
+        case 0x4A: szFamily = "EFM32LG";    break;
+        case 0x4B: szFamily = "EFM32WG";    break;
+        case 0x4C: szFamily = "EFM32ZG";    break;
+        case 0x4D: szFamily = "EFM32HG";    break;
+        case 0x51: szFamily = "EFM32PG1B";  break;
+        case 0x53: szFamily = "EFM32JG1B";  break;
+        case 0x55: szFamily = "EFM32PG12B"; break;
+        case 0x57: szFamily = "EFM32JG12B"; break;
+        case 0x64: szFamily = "EFM32GG11B"; break;
+        case 0x67: szFamily = "EFM32TG11B"; break;
+        case 0x6A: szFamily = "EFM32GG12B"; break;
+        case 0x78: szFamily = "EZR32LG";    break;
+        case 0x79: szFamily = "EZR32WG";    break;
+        case 0x7A: szFamily = "EZR32HG";    break;
+    }
 
     uint8_t ubPackage = (DEVINFO->MEMINFO & _DEVINFO_MEMINFO_PKGTYPE_MASK) >> _DEVINFO_MEMINFO_PKGTYPE_SHIFT;
     char cPackage = '?';
@@ -340,7 +343,7 @@ int init()
 }
 int main()
 {
-    DBGPRINTLN_CTX("MCP9600 ID 0x%02X%02X", mcp9600_get_id(), mcp9600_get_revision());
+    DBGPRINTLN_CTX("MCP9600 ID 0x%02X Revision 0x%02X", mcp9600_get_id(), mcp9600_get_revision());
 
     // Internal flash test
     DBGPRINTLN_CTX("Initial calibration dump:");
@@ -446,7 +449,7 @@ int main()
 
             on += step;
 
-            fPhaseAngle = CLAMP(on, 0.f, 1.f);
+            //fPhaseAngle = CLAMP(on, 0.f, 1.f);
 
             ullLastSweep = g_ullSystemTick;
         }
@@ -454,17 +457,17 @@ int main()
         static uint64_t ullLastPIDUpdate = 0;
         if(mcp9600_get_status() & MCP9600_TH_UPDT)
         {
-            float temp = mcp9600_get_hj_temp();
+            float fTemp = mcp9600_get_hj_temp();
 
             mcp9600_set_status(0x00);
 
             pOvenPID->fDeltaTime = g_ullSystemTick - ullLastPIDUpdate;
-            pOvenPID->fValue = temp;
+            pOvenPID->fValue = fTemp;
 
             pid_calc(pOvenPID);
 
             DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - ullLastPIDUpdate);
-            DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", temp);
+            DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", fTemp);
             DBGPRINTLN_CTX("PID - temp target %.3f C", pOvenPID->fSetpoint);
             DBGPRINTLN_CTX("PID - output %f / %d", pOvenPID->fOutput, PHASE_ANGLE_WIDTH);
             DBGPRINTLN_CTX("PID - output linear compensated %d / %d", g_usPacLookup[(uint16_t)pOvenPID->fOutput], PHASE_ANGLE_WIDTH);
@@ -484,8 +487,6 @@ int main()
         //sleep();
 
         DBGPRINTLN_CTX("RTCC Time: %lu", rtcc_get_time());
-
-        DBGPRINTLN_CTX("Big fag does not need debug uart anymore.");
         */
     }
 

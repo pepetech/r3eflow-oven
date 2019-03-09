@@ -28,9 +28,7 @@ int main(int argc, char *argv[])
     uint16_t samples = strtol(argv[1], &p, 10);
     // Check for errors: e.g., the string does not represent an integer
     // or the integer is larger than int
-    if (errno != 0 || *p != '\0' || samples > INT_MAX) {
-        // Put here the handling of the error, like exiting the program with
-        // an error message
+    if (errno != 0 || *p != '\0' || samples > UINT16_MAX || samples <= 0 ) {
         printf("invalid input argument[1]: num of samples!\n");
         return -1;
     }
@@ -39,9 +37,7 @@ int main(int argc, char *argv[])
     uint16_t min = strtol(argv[2], &p, 10);
     // Check for errors: e.g., the string does not represent an integer
     // or the integer is larger than int
-    if (errno != 0 || *p != '\0' || min > INT_MAX) {
-        // Put here the handling of the error, like exiting the program with
-        // an error message
+    if (errno != 0 || *p != '\0' || min > UINT16_MAX || min >= samples) {
         printf("invalid input argument[2]: min value!\n");
         return -1;
     }
@@ -50,9 +46,7 @@ int main(int argc, char *argv[])
     uint16_t max = strtol(argv[3], &p, 10);
     // Check for errors: e.g., the string does not represent an integer
     // or the integer is larger than int
-    if (errno != 0 || *p != '\0' || max > INT_MAX) {
-        // Put here the handling of the error, like exiting the program with
-        // an error message
+    if (errno != 0 || *p != '\0' || max > UINT16_MAX || max <= min) {
         printf("invalid input argument[3]: max value!\n");
         return -1;
     }
@@ -72,7 +66,8 @@ int main(int argc, char *argv[])
     for(uint16_t i = 1; i <= samples; i++)
     {
         ac_sine[i] = (sin(2.f*PI*50.f*((0.02f/(float)samples)/2.f)*i));
-        fprintf(fp, ", %.7ff", ac_sine[i]);
+        if(i % 30) fprintf(fp, ", %.7ff", ac_sine[i]);
+        else fprintf(fp, ",\n%.7ff", ac_sine[i]);
     }
     fprintf(fp, "};");
     fclose(fp);
@@ -89,7 +84,8 @@ int main(int argc, char *argv[])
     {
         sum += ac_sine[i] * ac_sine[i];
         rms[i] = sqrt(sum / samples);
-        fprintf(fp, ", %.7ff", rms[i]);
+        if(i % 30) fprintf(fp, ", %.7ff", rms[i]);
+        else fprintf(fp, ",\n%.7ff", rms[i]);
     }
     fprintf(fp,"};");
     fclose(fp);
