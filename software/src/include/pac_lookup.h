@@ -1,7 +1,10 @@
-#ifndef _PAC_LOOKUP_H_
-#define _PAC_LOOKUP_H_
+#ifndef __PAC_LOOKUP_H__
+#define __PAC_LOOKUP_H__
 
 #include <stdint.h>
+
+// TODO: Later declare on header file as extern const and define on a C file.
+// as it is right now, if you include this header more than once, it will create new copies since "static" means "local to current C file"
 
 static const uint16_t g_usPacLookup[10001] = {
 10, 12, 18, 24, 29, 34, 38, 42, 46, 50, 53, 57, 60, 64, 67, 70, 73, 76, 79, 82, 85, 88, 90, 93, 96, 98, 101, 103, 106, 109,
@@ -339,4 +342,4 @@ static const uint16_t g_usPacLookup[10001] = {
 8925, 8934, 8944, 8953, 8963, 8973, 8983, 8993, 9003, 9014, 9025, 9036, 9047, 9059, 9071, 9083, 9095, 9108, 9121, 9135, 9149, 9164, 9179, 9194, 9211, 9227, 9245, 9264, 9283, 9304,
 9326, 9349, 9374, 9402, 9432, 9465, 9504, 9549, 9606, 9688, 9700};
 
-#endif  // _PAC_LOOKUP_H_
+#endif  // __PAC_LOOKUP_H__
