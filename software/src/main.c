@@ -29,11 +29,12 @@
 #define MAX_PHASE_ANGLE     (PHASE_ANGLE_WIDTH - ZEROCROSS_DEADTIME)
 #define MIN_PHASE_ANGLE     (2 * SSR_LATCH_OFFSET)
 
-#define PID_KP  1    // PID Proportional gain
-#define PID_KI  0    // PID Integration gain
-#define PID_KD  0    // PID Derivative gain
+#define PID_KP  500     // PID Proportional gain
+#define PID_KI  0       // PID Integration gain
+#define PID_KD  0       // PID Derivative gain
 
 // Structs
+static pid_t *pOvenPID = NULL;
 
 // Forward declarations
 static void reset() __attribute__((noreturn));
@@ -46,7 +47,6 @@ static uint16_t get_device_revision();
 
 // Variables
 // static volatile float fPhaseAngle = 0.f;
-static pid_t *pOvenPID = NULL;
 
 // ISRs
 void _wtimer0_isr()
