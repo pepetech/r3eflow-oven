@@ -15,6 +15,15 @@
 //#define MCP9600_I2C_ADDR 0x66
 //#define MCP9600_I2C_ADDR 0x67
 
+#define MCP9600_0   0x00
+#define MCP9600_1   0x01
+#define MCP9600_2   0x02
+#define MCP9600_3   0x03
+#define MCP9600_4   0x04
+#define MCP9600_5   0x05
+#define MCP9600_6   0x06
+#define MCP9600_7   0x07
+
 #define MCP9600_DEV_ID 0x40
 
 #define MCP9600_REG_HJT 0x00        // Hot-Junction Temperature – TH
@@ -109,29 +118,29 @@
 
 // MCP9600_FUNCS
 
-uint8_t mcp9600_init();
+uint8_t mcp9600_init(uint8_t ubAddr);
 
-float mcp9600_get_hj_temp();
-float mcp9600_get_cj_temp();
-float mcp9600_get_temp_delta();
+float mcp9600_get_hj_temp(uint8_t ubAddr);
+float mcp9600_get_cj_temp(uint8_t ubAddr);
+float mcp9600_get_temp_delta(uint8_t ubAddr);
 
-uint32_t mcp9600_get_adc();
+uint32_t mcp9600_get_adc(uint8_t ubAddr);
 
-uint8_t mcp9600_get_id();
-uint8_t mcp9600_get_revision();
+uint8_t mcp9600_get_id(uint8_t ubAddr);
+uint8_t mcp9600_get_revision(uint8_t ubAddr);
 
-void mcp9600_set_status(uint8_t ubStatus);
+void mcp9600_set_status(uint8_t ubAddr, uint8_t ubStatus);
 uint8_t mcp9600_get_status();
 
-void mcp9600_set_sensor_config(uint8_t ubConfig);
-uint8_t mcp9600_get_sensor_config();
+void mcp9600_set_sensor_config(uint8_t ubAddr, uint8_t ubConfig);
+uint8_t mcp9600_get_sensor_config(uint8_t ubAddr);
 
-void mcp9600_set_config(uint8_t ubConfig);
-uint8_t mcp9600_get_config();
+void mcp9600_set_config(uint8_t ubAddr, uint8_t ubConfig);
+uint8_t mcp9600_get_config(uint8_t ubAddr);
 
-void mcp9600_set_alert_config(uint8_t ubAlert, uint8_t ubConfig);
-uint8_t mcp9600_get_alert_config(uint8_t ubAlert);
-void mcp9600_set_alert_hysteresis(uint8_t ubAlert, uint8_t ubHysteresis);
-void mcp9600_set_alert_limit(uint8_t ubAlert, float fLimit);
+void mcp9600_set_alert_config(uint8_t ubAddr, uint8_t ubAlert, uint8_t ubConfig);
+uint8_t mcp9600_get_alert_config(uint8_t ubAddr, uint8_t ubAlert);
+void mcp9600_set_alert_hysteresis(uint8_t ubAddr, uint8_t ubAlert, uint8_t ubHysteresis);
+void mcp9600_set_alert_limit(uint8_t ubAddr, uint8_t ubAlert, float fLimit);
 
 #endif  // __MCP9600_H__

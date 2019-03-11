@@ -55,7 +55,7 @@ void _wtimer0_isr()
 
     if(ulFlags & WTIMER_IF_OF)
     {
-        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - CLAMP((uint16_t)pOvenPID->fOutput, MIN_PHASE_ANGLE, MAX_PHASE_ANGLE)) / 0.028f;
+        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - CLAMP(g_usPacLookup[(uint16_t)pOvenPID->fOutput], MIN_PHASE_ANGLE, MAX_PHASE_ANGLE)) / 0.028f;
         WTIMER1->CC[2].CCV = WTIMER1->CC[1].CCV + ((float)SSR_LATCH_OFFSET / 0.028f);
     }
 }
@@ -327,10 +327,10 @@ int init()
             DBGPRINTLN_CTX("  Address 0x%02X ACKed!", a);
     }
 
-    if(mcp9600_init())
-        DBGPRINTLN_CTX("MCP9600 init OK!");
+    if(mcp9600_init(MCP9600_0))
+        DBGPRINTLN_CTX("MCP9600 n0 init OK!");
     else
-        DBGPRINTLN_CTX("MCP9600 init NOK!");
+        DBGPRINTLN_CTX("MCP9600 n0 init NOK!");
 
     pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_KP, PID_KI, PID_KD);
 
@@ -343,7 +343,7 @@ int init()
 }
 int main()
 {
-    DBGPRINTLN_CTX("MCP9600 ID 0x%02X Revision 0x%02X", mcp9600_get_id(), mcp9600_get_revision());
+    DBGPRINTLN_CTX("MCP9600 ID 0x%02X Revision 0x%02X", mcp9600_get_id(MCP9600_0), mcp9600_get_revision(MCP9600_0));
 
     // Internal flash test
     DBGPRINTLN_CTX("Initial calibration dump:");
@@ -372,8 +372,8 @@ int main()
     */
 
     // MCP9600 init
-    mcp9600_set_sensor_config(MCP9600_TYPE_K | MCP9600_FILT_COEF_0);
-    mcp9600_set_config(MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
+    mcp9600_set_sensor_config(MCP9600_0, MCP9600_TYPE_K | MCP9600_FILT_COEF_0);
+    mcp9600_set_config(MCP9600_0, MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
 
     // PID initialization
     pOvenPID->fSetpoint = 40.f;
@@ -448,6 +448,8 @@ int main()
     {
         static uint64_t ullLastBlink = 0;
         static uint64_t ullLastSweep = 0;
+        static uint64_t ullLastPIDUpdate = 0;
+        static uint64_t ullLastTempCheck = 0;
 
         if(g_ullSystemTick > (ullLastBlink + 500))
         {
@@ -480,35 +482,37 @@ int main()
             ullLastSweep = g_ullSystemTick;
         }
 
-        uint8_t ubStatus = mcp9600_get_status();
-
-        if(ubStatus & MCP9600_TH_UPDT)
+        if(g_ullSystemTick > (ullLastTempCheck + 10))
         {
-            static uint64_t ullLastPIDUpdate = 0;
+            uint8_t ubStatus = mcp9600_get_status(MCP9600_0);
 
-            float fTemp = mcp9600_get_hj_temp();
-            float fCold = mcp9600_get_cj_temp();
-            float fDelta = mcp9600_get_temp_delta();
+            if(ubStatus & MCP9600_TH_UPDT)
+            {
+                float fTemp = mcp9600_get_hj_temp(MCP9600_0);
+                //float fCold = mcp9600_get_cj_temp(MCP9600_0);
+                //float fDelta = mcp9600_get_temp_delta(MCP9600_0);
 
-            mcp9600_set_status(0x00);
-            //mcp9600_set_config(MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
+                mcp9600_set_status(MCP9600_0, 0x00);
+                //mcp9600_set_config(MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
 
-            pOvenPID->fDeltaTime = (float)(g_ullSystemTick - ullLastPIDUpdate) * 0.001f;
-            pOvenPID->fValue = fTemp;
+                pOvenPID->fDeltaTime = (float)(g_ullSystemTick - ullLastPIDUpdate) * 0.001f;
+                pOvenPID->fValue = fTemp;
 
-            pid_calc(pOvenPID);
+                pid_calc(pOvenPID);
 
-            DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - ullLastPIDUpdate);
-            DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", fTemp);
-            DBGPRINTLN_CTX("PID - MCP9600 cold %.3f C", fCold);
-            DBGPRINTLN_CTX("PID - MCP9600 delta %.3f C", fDelta);
-            DBGPRINTLN_CTX("PID - temp target %.3f C", pOvenPID->fSetpoint);
-            DBGPRINTLN_CTX("PID - output %.2f / %d", pOvenPID->fOutput, PHASE_ANGLE_WIDTH);
-            //DBGPRINTLN_CTX("PID - output linear compensated %d / %d", g_usPacLookup[(uint16_t)pOvenPID->fOutput], PHASE_ANGLE_WIDTH);
+                DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - ullLastPIDUpdate);
+                DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", fTemp);
+                //DBGPRINTLN_CTX("PID - MCP9600 cold %.3f C", fCold);
+                //DBGPRINTLN_CTX("PID - MCP9600 delta %.3f C", fDelta);
+                DBGPRINTLN_CTX("PID - temp target %.3f C", pOvenPID->fSetpoint);
+                DBGPRINTLN_CTX("PID - output %.2f / %d", pOvenPID->fOutput, PHASE_ANGLE_WIDTH);
+                //DBGPRINTLN_CTX("PID - output linear compensated %d / %d", g_usPacLookup[(uint16_t)pOvenPID->fOutput], PHASE_ANGLE_WIDTH);
 
-            ullLastPIDUpdate = g_ullSystemTick;
+                ullLastPIDUpdate = g_ullSystemTick;
+            }
+
+            ullLastTempCheck = g_ullSystemTick;
         }
-
         /*
         DBGPRINTLN_CTX("ADC Temp: %.2f", adc_get_temperature());
         DBGPRINTLN_CTX("EMU Temp: %.2f", emu_get_temperature());
