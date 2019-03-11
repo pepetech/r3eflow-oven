@@ -3,6 +3,7 @@
 
 #include <em_device.h>
 #include "i2c.h"
+#include "debug_macros.h"
 
 #define MCP9600_I2C_ADDR 0x60
 //#define MCP9600_I2C_ADDR 0x61

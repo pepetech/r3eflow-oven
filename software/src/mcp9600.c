@@ -17,17 +17,18 @@ float mcp9600_get_hj_temp()
 
     i2c1_read(MCP9600_I2C_ADDR, ubBuf, 2, I2C_STOP);
 
+    DBGPRINTLN_CTX("i2c buf:0x%02X 0x%02X", ubBuf[0], ubBuf[1]);
+
     uint16_t usTemp = ((uint16_t)ubBuf[0] << 8) | ubBuf[1];
-    float fTemp = 0.f;
 
     if(usTemp & 0x8000)
     {
         usTemp = ~usTemp + 1;
-        fTemp = -0.0625f * usTemp;
+        return -0.0625f * usTemp;
     }
     else
     {
-        fTemp = 0.0625f * usTemp;
+        return 0.0625f * usTemp;
     }
 }
 float mcp9600_get_cj_temp()

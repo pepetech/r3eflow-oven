@@ -30,8 +30,8 @@
 #define MIN_PHASE_ANGLE     (2 * SSR_LATCH_OFFSET)
 
 #define PID_KP  500     // PID Proportional gain
-#define PID_KI  0       // PID Integration gain
-#define PID_KD  0       // PID Derivative gain
+#define PID_KI  50       // PID Integration gain
+#define PID_KD  10       // PID Derivative gain
 
 // Structs
 static pid_t *pOvenPID = NULL;
@@ -371,8 +371,11 @@ int main()
     DBGPRINTLN_CTX("0x00100000: %08X", *(volatile uint32_t *)0x00100000);
     */
 
+    // MCP9600 init
+    mcp9600_set_sensor_config(MCP9600_TYPE_K | MCP9600_FILT_COEF_4);
+
     // PID initialization
-    pOvenPID->fSetpoint = 100.f;
+    pOvenPID->fSetpoint = 40.f;
 
     /*
         Function description:
@@ -482,7 +485,7 @@ int main()
 
             mcp9600_set_status(0x00);
 
-            pOvenPID->fDeltaTime = g_ullSystemTick - ullLastPIDUpdate;
+            pOvenPID->fDeltaTime = (float)(g_ullSystemTick - ullLastPIDUpdate) * 0.001f;
             pOvenPID->fValue = fTemp;
 
             pid_calc(pOvenPID);
@@ -490,8 +493,10 @@ int main()
             DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - ullLastPIDUpdate);
             DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", fTemp);
             DBGPRINTLN_CTX("PID - temp target %.3f C", pOvenPID->fSetpoint);
-            DBGPRINTLN_CTX("PID - output %f / %d", pOvenPID->fOutput, PHASE_ANGLE_WIDTH);
+            DBGPRINTLN_CTX("PID - output %.2f / %d", pOvenPID->fOutput, PHASE_ANGLE_WIDTH);
             DBGPRINTLN_CTX("PID - output linear compensated %d / %d", g_usPacLookup[(uint16_t)pOvenPID->fOutput], PHASE_ANGLE_WIDTH);
+        
+            ullLastPIDUpdate = g_ullSystemTick;
         }
 
         /*

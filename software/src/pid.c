@@ -7,7 +7,7 @@ pid_t* pid_init(float fMax, float fMin, float fKp, float fKi, float fKd)
     if(!pPID)
         return NULL;
 
-    pPID->fDeltaTime = 0.f;
+    pPID->fDeltaTime = 0;
     pPID->fMax = fMax;
     pPID->fMin = fMin;
     pPID->fKp = fKp;
@@ -33,6 +33,9 @@ void pid_free(pid_t *pPID)
 void pid_calc(pid_t *pPID)
 {
     if(!pPID)
+        return;
+
+    if(!pPID->fDeltaTime)
         return;
 
     // Calculate error
