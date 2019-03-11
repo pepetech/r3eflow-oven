@@ -2,9 +2,9 @@
 #define __MCP9600_H__
 
 #include <em_device.h>
+#include "i2c.h"
 #include "atomic.h"
 #include "systick.h"
-#include "i2c.h"
 
 #define MCP9600_I2C_ADDR 0x60
 //#define MCP9600_I2C_ADDR 0x61
