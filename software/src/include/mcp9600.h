@@ -2,8 +2,9 @@
 #define __MCP9600_H__
 
 #include <em_device.h>
+#include "atomic.h"
+#include "systick.h"
 #include "i2c.h"
-#include "debug_macros.h"
 
 #define MCP9600_I2C_ADDR 0x60
 //#define MCP9600_I2C_ADDR 0x61
@@ -66,13 +67,13 @@
 #define MCP9600_TYPE_R      0x70    // Thermocouple Type Select bits
 
 #define MCP9600_FILT_COEF_0 0x00    // Filter off
-#define MCP9600_FILT_COEF_1 0x00    // Minimum filter
-#define MCP9600_FILT_COEF_2 0x00    //
-#define MCP9600_FILT_COEF_3 0x00    //
-#define MCP9600_FILT_COEF_4 0x00    // Mid filter
-#define MCP9600_FILT_COEF_5 0x00    //
-#define MCP9600_FILT_COEF_6 0x00    //
-#define MCP9600_FILT_COEF_7 0x00    // Maximum filter
+#define MCP9600_FILT_COEF_1 0x01    // Minimum filter
+#define MCP9600_FILT_COEF_2 0x02    //
+#define MCP9600_FILT_COEF_3 0x03    //
+#define MCP9600_FILT_COEF_4 0x04    // Mid filter
+#define MCP9600_FILT_COEF_5 0x05    //
+#define MCP9600_FILT_COEF_6 0x06    //
+#define MCP9600_FILT_COEF_7 0x07    // Maximum filter
 
 // MCP9600 config register
 #define MCP9600_CJ_RES      0x80    // Cold-Junction Resolution bit
@@ -131,6 +132,6 @@ uint8_t mcp9600_get_config();
 void mcp9600_set_alert_config(uint8_t ubAlert, uint8_t ubConfig);
 uint8_t mcp9600_get_alert_config(uint8_t ubAlert);
 void mcp9600_set_alert_hysteresis(uint8_t ubAlert, uint8_t ubHysteresis);
-void mcp9600_set_alert_limit(uint8_t ubAlert, float dLimit);
+void mcp9600_set_alert_limit(uint8_t ubAlert, float fLimit);
 
 #endif  // __MCP9600_H__

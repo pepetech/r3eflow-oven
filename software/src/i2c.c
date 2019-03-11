@@ -90,12 +90,12 @@ void i2c1_init(uint8_t ubMode, uint8_t ubSCLLocation, uint8_t ubSDALocation)
 
 	CMU->HFPERCLKEN0 |= CMU_HFPERCLKEN0_I2C1;
 
-    I2C1->CTRL = I2C_CTRL_CLHR_STANDARD | I2C_CTRL_TXBIL_EMPTY;
+    I2C1->CTRL = I2C_CTRL_CLHR_ASYMMETRIC | I2C_CTRL_TXBIL_EMPTY;
     I2C1->ROUTEPEN = I2C_ROUTEPEN_SCLPEN | I2C_ROUTEPEN_SDAPEN;
     I2C1->ROUTELOC0 = ((uint32_t)ubSCLLocation << _I2C_ROUTELOC0_SCLLOC_SHIFT) | ((uint32_t)ubSDALocation << _I2C_ROUTELOC0_SDALOC_SHIFT);
 
     if(ubMode == I2C_NORMAL)
-        I2C1->CLKDIV = (((HFPERC_CLOCK_FREQ / 100000) - 8) / 8) - 1;
+        I2C1->CLKDIV = (((HFPERC_CLOCK_FREQ / 100000) - 8) / 9) - 1;
     else if(ubMode == I2C_FAST)
         I2C1->CLKDIV = (((HFPERC_CLOCK_FREQ / 400000) - 8) / 8) - 1;
 
@@ -106,30 +106,57 @@ void i2c1_init(uint8_t ubMode, uint8_t ubSCLLocation, uint8_t ubSDALocation)
 }
 uint8_t i2c1_transmit(uint8_t ubAddress, uint8_t* pubSrc, uint32_t ulCount, uint8_t ubStop)
 {
+    I2C1->IFC = _I2C_IFC_MASK;
+
     I2C1->CMD = I2C_CMD_START;
 
-    while((I2C1->STATE & 0xF3) != 0x53);
+    while(!(I2C1->IF & (I2C_IF_START | I2C_IF_RSTART | I2C_IF_ARBLOST | I2C_IF_BUSERR)));
 
-    I2C1->TXDATA = ubAddress;
-
-    while((I2C1->STATE & 0xD3) != 0x93);
-
-    if(I2C1->STATE & I2C_STATE_NACKED)
+    if(I2C1->IF & (I2C_IF_ARBLOST | I2C_IF_BUSERR))
     {
-        I2C1->CMD = I2C_CMD_STOP;
+        I2C1->CMD = I2C_CMD_ABORT;
 
         return 0;
     }
 
-    if (ubAddress & 1) // Read
-        REG_DISCARD(&I2C1->RXDATA);
+    I2C1->TXDATA = ubAddress;
+
+    while(!(I2C1->IF & (I2C_IF_ACK | I2C_IF_NACK | I2C_IF_ARBLOST | I2C_IF_BUSERR)));
+
+    if(I2C1->IF & (I2C_IF_ARBLOST | I2C_IF_BUSERR))
+    {
+        I2C1->CMD = I2C_CMD_ABORT;
+
+        return 0;
+    }
+    else if(I2C1->IF & I2C_IF_NACK)
+    {
+        I2C1->CMD = I2C_CMD_STOP;
+
+        while(I2C1->IFC & (I2C_IFC_MSTOP | I2C_IFC_ARBLOST | I2C_IF_BUSERR));
+
+        if(I2C1->IF & (I2C_IF_ARBLOST | I2C_IF_BUSERR))
+            I2C1->CMD = I2C_CMD_ABORT;
+
+        return 0;
+    }
+
+    //if (ubAddress & 1) // Read
+    //    REG_DISCARD(&I2C1->RXDATA);
 
 	if(ulCount)
 		do
 		{
 			if (ubAddress & 1) // Read
 			{
-                while((I2C1->STATE & 0xF3) != 0xB3);
+                while(!(I2C1->IF & (I2C_IF_RXDATAV | I2C_IF_ARBLOST | I2C_IF_BUSERR)));
+
+                if(I2C1->IF & (I2C_IF_ARBLOST | I2C_IF_BUSERR))
+                {
+                    I2C1->CMD = I2C_CMD_ABORT;
+
+                    return 0;
+                }
 
 				*(pubSrc++) = I2C1->RXDATA;
 
@@ -140,13 +167,26 @@ uint8_t i2c1_transmit(uint8_t ubAddress, uint8_t* pubSrc, uint32_t ulCount, uint
 			}
 			else // Write
 			{
+                I2C1->IFC = I2C_IFC_ACK;
+
 				I2C1->TXDATA = *(pubSrc++);
 
-                while((I2C1->STATE & 0xF7) != 0xD7);
+                while(!(I2C1->IF & (I2C_IF_ACK | I2C_IF_NACK | I2C_IF_ARBLOST | I2C_IF_BUSERR)));
 
-                if(I2C1->STATE & I2C_STATE_NACKED)
+                if(I2C1->IF & (I2C_IF_ARBLOST | I2C_IF_BUSERR))
+                {
+                    I2C1->CMD = I2C_CMD_ABORT;
+
+                    return 0;
+                }
+                else if(I2C1->IF & I2C_IF_NACK)
                 {
                     I2C1->CMD = I2C_CMD_STOP;
+
+                    while(I2C1->IFC & (I2C_IFC_MSTOP | I2C_IFC_ARBLOST | I2C_IF_BUSERR));
+
+                    if(I2C1->IF & (I2C_IF_ARBLOST | I2C_IF_BUSERR))
+                        I2C1->CMD = I2C_CMD_ABORT;
 
                     return 0;
                 }
@@ -154,7 +194,18 @@ uint8_t i2c1_transmit(uint8_t ubAddress, uint8_t* pubSrc, uint32_t ulCount, uint
 		} while(--ulCount);
 
     if(ubStop)
+    {
         I2C1->CMD = I2C_CMD_STOP;
+
+        while(I2C1->IFC & (I2C_IFC_MSTOP | I2C_IFC_ARBLOST | I2C_IF_BUSERR));
+
+        if(I2C1->IF & (I2C_IF_ARBLOST | I2C_IF_BUSERR))
+        {
+            I2C1->CMD = I2C_CMD_ABORT;
+
+            return 0;
+        }
+    }
 
 	return 1;
 }
