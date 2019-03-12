@@ -17,6 +17,7 @@
 #include "rtcc.h"
 #include "adc.h"
 #include "i2c.h"
+#include "usart.h"
 #include "mcp9600.h"
 #include "pid.h"
 #include "pac_lookup.h"
@@ -253,6 +254,7 @@ int init()
     fDVDDHighThresh = fDVDDLowThresh + 0.026f; // Hysteresis from datasheet
     fIOVDDHighThresh = fIOVDDLowThresh + 0.026f; // Hysteresis from datasheet
 
+    usart0_init(1000000, 0, USART_SPI_MSB_FIRST, 0, 0, 0);
     i2c1_init(I2C_NORMAL, 1, 1); // Init I2C1 at 100 kHz on location 1
 
     char szDeviceName[32];
@@ -342,16 +344,29 @@ int init()
         DBGPRINTLN_CTX("Oven PID init NOK!");
 
     return 0;
+
 }
 int main()
 {
+    PERI_REG_BIT_SET(&(GPIO->P[4].DOUT)) = BIT(13);
+    delay_ms(100);
+
+    PERI_REG_BIT_CLEAR(&(GPIO->P[4].DOUT)) = BIT(13);
+    usart0_spi_transfer_byte(0x05);
+    uint8_t thegay = usart0_spi_transfer_byte(0xDD);
+    uint8_t thegay2 = usart0_spi_transfer_byte(0xAB);
+    PERI_REG_BIT_SET(&(GPIO->P[4].DOUT)) = BIT(13);
+
+    DBGPRINTLN_CTX("the gay is 0x%02X", thegay);
+    DBGPRINTLN_CTX("the gay 2 is 0x%02X", thegay2);
+
     DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));
 
     // Internal flash test
-    DBGPRINTLN_CTX("Initial calibration dump:");
+    //DBGPRINTLN_CTX("Initial calibration dump:");
 
-    for(init_calib_t *psCalibTbl = g_psInitCalibrationTable; psCalibTbl->pulRegister; psCalibTbl++)
-        DBGPRINTLN_CTX("  0x%08X -> 0x%08X", psCalibTbl->ulInitialCalibration, psCalibTbl->pulRegister);
+    //for(init_calib_t *psCalibTbl = g_psInitCalibrationTable; psCalibTbl->pulRegister; psCalibTbl++)
+    //    DBGPRINTLN_CTX("  0x%08X -> 0x%08X", psCalibTbl->ulInitialCalibration, psCalibTbl->pulRegister);
 
     /*
     DBGPRINTLN_CTX("Boot lock word: %08X", g_psLockBits->CLW[0]);
