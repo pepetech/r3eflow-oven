@@ -443,7 +443,7 @@
                 "HFXO_VALUE=10000000UL",
                 "LFXO_VALUE=32768UL",
                 "BUILD_VERSION",
-                "EFM32GG11B320F2048GQ100"
+                "EFM32GG11B820F2048GQ100"
             ],
             "compilerPath": "arm-none-eabi-gcc.exe -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16",
             "cStandard": "c99",
@@ -893,7 +893,7 @@
                 "HFXO_VALUE=10000000UL",
                 "LFXO_VALUE=32768UL",
                 "BUILD_VERSION",
-                "EFM32GG11B320F2048GQ100"
+                "EFM32GG11B820F2048GQ100"
             ],
             "compilerPath": "arm-none-eabi-gcc -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16",
             "cStandard": "c99",

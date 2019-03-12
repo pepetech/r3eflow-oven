@@ -15,15 +15,6 @@
 //#define MCP9600_I2C_ADDR 0x66
 //#define MCP9600_I2C_ADDR 0x67
 
-#define MCP9600_0   0x00
-#define MCP9600_1   0x01
-#define MCP9600_2   0x02
-#define MCP9600_3   0x03
-#define MCP9600_4   0x04
-#define MCP9600_5   0x05
-#define MCP9600_6   0x06
-#define MCP9600_7   0x07
-
 #define MCP9600_DEV_ID 0x40
 
 #define MCP9600_REG_HJT 0x00        // Hot-Junction Temperature – TH
@@ -130,7 +121,7 @@ uint8_t mcp9600_get_id(uint8_t ubAddr);
 uint8_t mcp9600_get_revision(uint8_t ubAddr);
 
 void mcp9600_set_status(uint8_t ubAddr, uint8_t ubStatus);
-uint8_t mcp9600_get_status();
+uint8_t mcp9600_get_status(uint8_t ubAddr);
 
 void mcp9600_set_sensor_config(uint8_t ubAddr, uint8_t ubConfig);
 uint8_t mcp9600_get_sensor_config(uint8_t ubAddr);

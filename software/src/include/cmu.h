@@ -138,4 +138,4 @@ float cmu_hfxo_get_pma_current();
 void cmu_lfxo_calib(uint8_t ubCTune);
 float cmu_lfxo_get_cap();
 
-#endif  // __CMU_H__
+#endif

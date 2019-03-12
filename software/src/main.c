@@ -239,8 +239,6 @@ int init()
 
     gpio_init(); // Init GPIOs
     rtcc_init(); // Init RTCC
-    crypto_init(); // Init Crypto engine
-    crc_init(); // Init CRC calculation unit
     adc_init(); // Init ADCs
 
     float fAVDDHighThresh, fAVDDLowThresh;
@@ -284,6 +282,9 @@ int init()
     DBGPRINTLN_CTX("CMU - HFPERB Clock: %.1f MHz!", (float)HFPERB_CLOCK_FREQ / 1000000);
     DBGPRINTLN_CTX("CMU - HFPERC Clock: %.1f MHz!", (float)HFPERC_CLOCK_FREQ / 1000000);
     DBGPRINTLN_CTX("CMU - HFLE Clock: %.1f MHz!", (float)HFLE_CLOCK_FREQ / 1000000);
+    DBGPRINTLN_CTX("CMU - QSPI Clock: %.1f MHz!", (float)QSPI_CLOCK_FREQ / 1000000);
+    DBGPRINTLN_CTX("CMU - SDIO Clock: %.1f MHz!", (float)SDIO_CLOCK_FREQ / 1000000);
+    DBGPRINTLN_CTX("CMU - USB Clock: %.1f MHz!", (float)USB_CLOCK_FREQ / 1000000);
     DBGPRINTLN_CTX("CMU - ADC0 Clock: %.1f MHz!", (float)ADC0_CLOCK_FREQ / 1000000);
     DBGPRINTLN_CTX("CMU - ADC1 Clock: %.1f MHz!", (float)ADC1_CLOCK_FREQ / 1000000);
     DBGPRINTLN_CTX("CMU - DBG Clock: %.1f MHz!", (float)DBG_CLOCK_FREQ / 1000000);
@@ -327,10 +328,10 @@ int init()
             DBGPRINTLN_CTX("  Address 0x%02X ACKed!", a);
     }
 
-    if(mcp9600_init(MCP9600_0))
-        DBGPRINTLN_CTX("MCP9600 n0 init OK!");
+    if(mcp9600_init(0))
+        DBGPRINTLN_CTX("MCP9600 #0 init OK!");
     else
-        DBGPRINTLN_CTX("MCP9600 n0 init NOK!");
+        DBGPRINTLN_CTX("MCP9600 #0 init NOK!");
 
     pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_KP, PID_KI, PID_KD);
 
@@ -343,7 +344,7 @@ int init()
 }
 int main()
 {
-    DBGPRINTLN_CTX("MCP9600 ID 0x%02X Revision 0x%02X", mcp9600_get_id(MCP9600_0), mcp9600_get_revision(MCP9600_0));
+    DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));
 
     // Internal flash test
     DBGPRINTLN_CTX("Initial calibration dump:");
@@ -372,8 +373,8 @@ int main()
     */
 
     // MCP9600 init
-    mcp9600_set_sensor_config(MCP9600_0, MCP9600_TYPE_K | MCP9600_FILT_COEF_0);
-    mcp9600_set_config(MCP9600_0, MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
+    mcp9600_set_sensor_config(0, MCP9600_TYPE_K | MCP9600_FILT_COEF_0);
+    mcp9600_set_config(0, MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
 
     // PID initialization
     pOvenPID->fSetpoint = 40.f;
@@ -484,15 +485,15 @@ int main()
 
         if(g_ullSystemTick > (ullLastTempCheck + 10))
         {
-            uint8_t ubStatus = mcp9600_get_status(MCP9600_0);
+            uint8_t ubStatus = mcp9600_get_status(0);
 
             if(ubStatus & MCP9600_TH_UPDT)
             {
-                float fTemp = mcp9600_get_hj_temp(MCP9600_0);
+                float fTemp = mcp9600_get_hj_temp(0);
                 //float fCold = mcp9600_get_cj_temp(MCP9600_0);
                 //float fDelta = mcp9600_get_temp_delta(MCP9600_0);
 
-                mcp9600_set_status(MCP9600_0, 0x00);
+                mcp9600_set_status(0, 0x00);
                 //mcp9600_set_config(MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
 
                 pOvenPID->fDeltaTime = (float)(g_ullSystemTick - ullLastPIDUpdate) * 0.001f;
