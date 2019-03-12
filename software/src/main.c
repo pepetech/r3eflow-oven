@@ -28,10 +28,10 @@
 #define PHASE_ANGLE_WIDTH   10000   // us
 #define MAX_PHASE_ANGLE     (PHASE_ANGLE_WIDTH - ZEROCROSS_DEADTIME)
 #define MIN_PHASE_ANGLE     (2 * SSR_LATCH_OFFSET)
-
-#define PID_KP  500     // PID Proportional gain
-#define PID_KI  50       // PID Integration gain
-#define PID_KD  10       // PID Derivative gain
+ 
+#define PID_KP  500      // PID Proportional gain
+#define PID_KI  20       // PID Integration gain
+#define PID_KD  5        // PID Derivative gain
 
 // Structs
 static pid_t *pOvenPID = NULL;
@@ -377,7 +377,7 @@ int main()
     mcp9600_set_config(0, MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
 
     // PID initialization
-    pOvenPID->fSetpoint = 40.f;
+    pOvenPID->fSetpoint = 10.f;
 
     /*
         Function description:
@@ -448,7 +448,7 @@ int main()
     while(1)
     {
         static uint64_t ullLastBlink = 0;
-        static uint64_t ullLastSweep = 0;
+        static uint64_t ullLastInput = 0;
         static uint64_t ullLastPIDUpdate = 0;
         static uint64_t ullLastTempCheck = 0;
 
@@ -459,28 +459,11 @@ int main()
             ullLastBlink = g_ullSystemTick;
         }
 
-        if(g_ullSystemTick > (ullLastSweep + 500))
+        if(GPIO->P[0].DIN & BIT(2) && g_ullSystemTick > (ullLastInput + 500))
         {
-            static float on = 0.f;
-            static float step = 0.005f;
+            pOvenPID->fSetpoint += 2.f;
 
-            if(on >= 1.f)
-            {
-                on = 1.f;
-                step = -step;
-            }
-
-            if(on <= 0.f)
-            {
-                on = 0.f;
-                step = -step;
-            }
-
-            on += step;
-
-            //fPhaseAngle = CLAMP(on, 0.f, 1.f);
-
-            ullLastSweep = g_ullSystemTick;
+            ullLastInput = g_ullSystemTick;
         }
 
         if(g_ullSystemTick > (ullLastTempCheck + 10))
@@ -506,6 +489,7 @@ int main()
                 //DBGPRINTLN_CTX("PID - MCP9600 cold %.3f C", fCold);
                 //DBGPRINTLN_CTX("PID - MCP9600 delta %.3f C", fDelta);
                 DBGPRINTLN_CTX("PID - temp target %.3f C", pOvenPID->fSetpoint);
+                DBGPRINTLN_CTX("PID - integral %.3f", pOvenPID->fIntegral);
                 DBGPRINTLN_CTX("PID - output %.2f / %d", pOvenPID->fOutput, PHASE_ANGLE_WIDTH);
                 //DBGPRINTLN_CTX("PID - output linear compensated %d / %d", g_usPacLookup[(uint16_t)pOvenPID->fOutput], PHASE_ANGLE_WIDTH);
 
@@ -523,7 +507,7 @@ int main()
         DBGPRINTLN_CTX("HFXO Steady: %.2f pF", cmu_hfxo_get_steady_cap());
         DBGPRINTLN_CTX("HFXO Steady: %.2f uA", cmu_hfxo_get_steady_current());
         DBGPRINTLN_CTX("HFXO PMA [%03X]: %.2f uA", cmu_hfxo_get_pma_ibtrim(), cmu_hfxo_get_pma_current());
-        DBGPRINTLN_CTX("HFXO PDA [%03X]: %.2f uA", cmu_hfxo_get_pda_ibtrim(1), cmu_hfxo_get_pda_current(0));
+        DBGPRINTLN_CTX("HFXO PDA [resistor%03X]: %.2f uA", cmu_hfxo_get_pda_ibtrim(1), cmu_hfxo_get_pda_current(0));
 
         //sleep();
 

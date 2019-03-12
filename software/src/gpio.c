@@ -9,7 +9,7 @@ void gpio_init()
                       | GPIO_P_CTRL_DRIVESTRENGTH_STRONG | (5 << _GPIO_P_CTRL_SLEWRATE_SHIFT);
     GPIO->P[0].MODEL  = GPIO_P_MODEL_MODE0_PUSHPULL  // GPIO - LED
                       | GPIO_P_MODEL_MODE1_PUSHPULL
-                      | GPIO_P_MODEL_MODE2_DISABLED
+                      | GPIO_P_MODEL_MODE2_INPUTPULLFILTER
                       | GPIO_P_MODEL_MODE3_DISABLED
                       | GPIO_P_MODEL_MODE4_DISABLED
                       | GPIO_P_MODEL_MODE5_DISABLED
