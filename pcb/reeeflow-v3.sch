@@ -5452,6 +5452,9 @@ Viewing Area</text>
 <part name="C24" library="Passive Components &gt; Capacitors &gt; Multilayer Ceramic Capacitors MLCC" deviceset="MLCC" device="0603"/>
 <part name="J2" library="Connectors &gt; JST &gt; PH" deviceset="PH-2" device=""/>
 <part name="GND39" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
+<part name="C25" library="Passive Components &gt; Capacitors &gt; Multilayer Ceramic Capacitors MLCC" deviceset="MLCC" device="0603"/>
+<part name="SUPPLY45" library="Utility &gt; Power Symbols" deviceset="3.3V" device=""/>
+<part name="GND40" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -7171,9 +7174,9 @@ cooling fan out
 door switch
 servo out's
 motor out's (door open)</text>
-<text x="16.256" y="229.616" size="1.778" layer="94" rot="R90">Decouple</text>
-<wire x1="20.32" y1="226.06" x2="1.27" y2="226.06" width="0.1016" layer="94"/>
-<wire x1="20.32" y1="226.06" x2="20.32" y2="251.46" width="0.1016" layer="94"/>
+<text x="23.876" y="229.616" size="1.778" layer="94" rot="R90">Decouple</text>
+<wire x1="27.94" y1="226.06" x2="1.27" y2="226.06" width="0.1016" layer="94"/>
+<wire x1="27.94" y1="226.06" x2="27.94" y2="251.46" width="0.1016" layer="94"/>
 </plain>
 <instances>
 <instance part="U$3" gate="G$1" x="0" y="0" smashed="yes"/>
@@ -7275,6 +7278,16 @@ motor out's (door open)</text>
 </instance>
 <instance part="SUPPLY36" gate="G$1" x="215.9" y="119.38" smashed="yes">
 <attribute name="VALUE" x="215.9" y="122.174" size="1.778" layer="96" align="bottom-center"/>
+</instance>
+<instance part="C25" gate="G$1" x="15.24" y="238.76" smashed="yes">
+<attribute name="NAME" x="13.716" y="236.22" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="17.78" y="236.22" size="1.27" layer="96" rot="R90"/>
+</instance>
+<instance part="SUPPLY45" gate="G$1" x="15.24" y="243.84" smashed="yes">
+<attribute name="VALUE" x="15.24" y="246.634" size="1.778" layer="96" align="bottom-center"/>
+</instance>
+<instance part="GND40" gate="1" x="15.24" y="231.14" smashed="yes">
+<attribute name="VALUE" x="15.24" y="230.886" size="1.778" layer="96" align="top-center"/>
 </instance>
 </instances>
 <busses>
@@ -7472,6 +7485,11 @@ motor out's (door open)</text>
 <pinref part="U7" gate="G$1" pin="GND@17"/>
 <pinref part="U7" gate="G$1" pin="GND@18"/>
 </segment>
+<segment>
+<pinref part="C25" gate="G$1" pin="P$2"/>
+<pinref part="GND40" gate="1" pin="GND"/>
+<wire x1="15.24" y1="236.22" x2="15.24" y2="233.68" width="0.1524" layer="91"/>
+</segment>
 </net>
 <net name="3.3V" class="0">
 <segment>
@@ -7508,6 +7526,11 @@ motor out's (door open)</text>
 <wire x1="238.76" y1="114.3" x2="215.9" y2="114.3" width="0.1524" layer="91"/>
 <wire x1="215.9" y1="114.3" x2="215.9" y2="119.38" width="0.1524" layer="91"/>
 <pinref part="SUPPLY36" gate="G$1" pin="3.3V"/>
+</segment>
+<segment>
+<pinref part="SUPPLY45" gate="G$1" pin="3.3V"/>
+<pinref part="C25" gate="G$1" pin="P$1"/>
+<wire x1="15.24" y1="243.84" x2="15.24" y2="241.3" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="I2C0-SDA-SENS" class="0">
