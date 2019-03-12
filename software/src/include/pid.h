@@ -10,6 +10,7 @@ typedef struct
     float fDeltaTime;
     float fMax;
     float fMin;
+    float fKiCap;
     float fKp;
     float fKi;
     float fKd;
@@ -20,7 +21,7 @@ typedef struct
     volatile float fOutput;
 } pid_t;
 
-pid_t* pid_init(float fMax, float fMin, float fKp, float fKi, float fKd);
+pid_t* pid_init(float fMax, float fMin, float fKiCap, float fKp, float fKi, float fKd);
 
 void pid_free(pid_t *pPID);
 

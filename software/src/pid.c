@@ -1,6 +1,6 @@
 #include "pid.h"
 
-pid_t* pid_init(float fMax, float fMin, float fKp, float fKi, float fKd)
+pid_t* pid_init(float fMax, float fMin, float fKiCap, float fKp, float fKi, float fKd)
 {
     pid_t *pPID = (pid_t *)malloc(sizeof(pid_t));
 
@@ -10,6 +10,7 @@ pid_t* pid_init(float fMax, float fMin, float fKp, float fKi, float fKd)
     pPID->fDeltaTime = 0;
     pPID->fMax = fMax;
     pPID->fMin = fMin;
+    pPID->fKiCap = fKiCap;
     pPID->fKp = fKp;
     pPID->fKi = fKi;
     pPID->fKd = fKd;
@@ -46,6 +47,8 @@ void pid_calc(pid_t *pPID)
 
     // Integral term
     pPID->fIntegral += fError * pPID->fDeltaTime;
+    if(pPID->fIntegral > pPID->fKiCap)
+        pPID->fIntegral = pPID->fKiCap;
     float fIntegral = pPID->fKi * pPID->fIntegral;
 
     // Derivative term

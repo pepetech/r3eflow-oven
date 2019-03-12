@@ -30,7 +30,8 @@
 #define MIN_PHASE_ANGLE     (2 * SSR_LATCH_OFFSET)
  
 #define PID_KP  500      // PID Proportional gain
-#define PID_KI  20       // PID Integration gain
+#define PID_KI  25       // PID Integration gain
+#define PID_KI_CAP  250  // PID Integration gain
 #define PID_KD  5        // PID Derivative gain
 
 // Structs
@@ -333,7 +334,7 @@ int init()
     else
         DBGPRINTLN_CTX("MCP9600 #0 init NOK!");
 
-    pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_KP, PID_KI, PID_KD);
+    pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_KI_CAP, PID_KP, PID_KI, PID_KD);
 
     if(pOvenPID)
         DBGPRINTLN_CTX("Oven PID init OK!");
