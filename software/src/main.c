@@ -22,6 +22,8 @@
 #include "pid.h"
 #include "pac_lookup.h"
 
+// https://www.silabs.com/documents/public/application-notes/AN0030.pdf
+
 #define ZEROCROSS_DELAY     1400    // us
 #define SSR_LATCH_OFFSET    5       // us
 #define ZEROCROSS_DEADTIME  300     // us
@@ -29,7 +31,8 @@
 #define PHASE_ANGLE_WIDTH   10000   // us
 #define MAX_PHASE_ANGLE     (PHASE_ANGLE_WIDTH - ZEROCROSS_DEADTIME)
 #define MIN_PHASE_ANGLE     (2 * SSR_LATCH_OFFSET)
- 
+
+#define PID_OPERATING_RANGE 15 // PID starts at (setpoint -+ this value)
 #define PID_KP  500      // PID Proportional gain
 #define PID_KI  25       // PID Integration gain
 #define PID_KI_CAP  250  // PID Integration gain
