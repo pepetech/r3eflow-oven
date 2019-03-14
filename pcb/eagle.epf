@@ -182,7 +182,6 @@ UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Sensors/Sensors > Optical Sensor
 UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Sensors/Sensors > Pressure Sensors.lbr"
 UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Sensors/Sensors > Temperature Sensors.lbr"
 UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Thermal Management/Thermal Management > Fans & Blowers.lbr"
-UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Thermal Management/Thermal Management > Heat Sinks.lbr"
 UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Utility/Utility > Board.lbr"
 UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Utility/Utility > Power Symbols.lbr"
 UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Utility/Utility > Schematic.lbr"
@@ -190,6 +189,8 @@ UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Utility/Utility > Silkscreen.lbr
 UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Power/Power > Power management.lbr"
 UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Semiconductors/Semiconductors > Integrated Circuits - ICs > Bus Transiever.lbr"
 UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Power/Power > Power Switch.lbr"
+UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Thermal Management/Thermal Management > Heatsinks.lbr"
+UsedLibrary="/home/rafael/EAGLE/libraries/RSLib/Connectors/Connectors > card socket.lbr"
 
 [Win_1]
 Type="Control Panel"
