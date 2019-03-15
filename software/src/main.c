@@ -24,8 +24,8 @@
 
 // https://www.silabs.com/documents/public/application-notes/AN0030.pdf
 
-#define ZEROCROSS_DELAY     1400    // us
-#define SSR_LATCH_OFFSET    5       // us
+#define ZEROCROSS_DELAY     1300    // us
+#define SSR_LATCH_OFFSET    10       // us
 #define ZEROCROSS_DEADTIME  300     // us
 
 #define PHASE_ANGLE_WIDTH   10000   // us
@@ -33,10 +33,10 @@
 #define MIN_PHASE_ANGLE     (2 * SSR_LATCH_OFFSET)
 
 #define PID_OPERATING_RANGE 15 // PID starts at (setpoint -+ this value)
-#define PID_KP  500      // PID Proportional gain
-#define PID_KI  25       // PID Integration gain
-#define PID_KI_CAP  250  // PID Integration gain
-#define PID_KD  5        // PID Derivative gain
+#define PID_KP  350      // PID Proportional gain
+#define PID_KI  20       // PID Integration gain
+#define PID_KI_CAP  300  // PID Integration gain
+#define PID_KD  10        // PID Derivative gain
 
 // Structs
 static pid_t *pOvenPID = NULL;
@@ -59,7 +59,7 @@ void _wtimer0_isr()
     uint32_t ulFlags = WTIMER0->IFC;
 
     if(ulFlags & WTIMER_IF_OF)
-    {
+    {  
         WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - CLAMP(g_usPacLookup[(uint16_t)pOvenPID->fOutput], MIN_PHASE_ANGLE, MAX_PHASE_ANGLE)) / 0.028f;
         WTIMER1->CC[2].CCV = WTIMER1->CC[1].CCV + ((float)SSR_LATCH_OFFSET / 0.028f);
     }
@@ -339,7 +339,7 @@ int init()
     else
         DBGPRINTLN_CTX("MCP9600 #0 init NOK!");
 
-    pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_KI_CAP, PID_KP, PID_KI, PID_KD);
+    pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_OPERATING_RANGE, PID_KI_CAP, PID_KP, PID_KI, PID_KD);
 
     if(pOvenPID)
         DBGPRINTLN_CTX("Oven PID init OK!");
@@ -396,7 +396,7 @@ int main()
     mcp9600_set_config(0, MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
 
     // PID initialization
-    pOvenPID->fSetpoint = 10.f;
+    pOvenPID->fSetpoint = 160.f;
 
     /*
         Function description:
@@ -470,6 +470,9 @@ int main()
         static uint64_t ullLastInput = 0;
         static uint64_t ullLastPIDUpdate = 0;
         static uint64_t ullLastTempCheck = 0;
+        static uint64_t ullLastStateUpdate = 0;
+
+        float fTemp;
 
         if(g_ullSystemTick > (ullLastBlink + 500))
         {
@@ -491,7 +494,7 @@ int main()
 
             if(ubStatus & MCP9600_TH_UPDT)
             {
-                float fTemp = mcp9600_get_hj_temp(0);
+                fTemp = mcp9600_get_hj_temp(0);
                 //float fCold = mcp9600_get_cj_temp(MCP9600_0);
                 //float fDelta = mcp9600_get_temp_delta(MCP9600_0);
 
@@ -517,6 +520,62 @@ int main()
 
             ullLastTempCheck = g_ullSystemTick;
         }
+
+        if(g_ullSystemTick > (ullLastStateUpdate + 500))
+        {
+            static uint64_t ullTimer = 0;
+            static uint8_t ubState = 0;
+
+            switch(ubState)
+            {
+                case 0:     // preheat
+                    DBGPRINTLN_CTX("State - preheat");
+                    DBGPRINTLN_CTX("State - progress - %.3f C / 160 C", fTemp);
+                    pOvenPID->fSetpoint = 160;
+                    if(fTemp > 160) 
+                    {                        
+                        ubState = 1;
+                        ullTimer = g_ullSystemTick;
+                    }
+                    break;
+
+                case 1:     // soak
+                    DBGPRINTLN_CTX("State - soak");
+                    DBGPRINTLN_CTX("State - progress - %lu ms left", (ullTimer + 90000) - g_ullSystemTick);
+                    pOvenPID->fSetpoint = 180;
+                    if(g_ullSystemTick > (ullTimer + 90000)) 
+                    {
+                        ubState = 2;
+                        ullTimer = g_ullSystemTick;
+                    }
+                    
+                    break;
+            
+                case 2:     // reflow
+                    DBGPRINTLN_CTX("State - reflow");
+                    DBGPRINTLN_CTX("State - progress - %.3f C / 240 C", fTemp);
+                    pOvenPID->fSetpoint = 240;
+                    if(fTemp > 220) 
+                    {                        
+                        ubState = 3;
+                        ullTimer = g_ullSystemTick;
+                    }
+                    break;
+
+                case 3:     // cool
+                    DBGPRINTLN_CTX("State - cool");
+                    pOvenPID->fSetpoint = 0;
+                    break;
+                    
+                default:
+                    DBGPRINTLN_CTX("State - default");
+                    pOvenPID->fSetpoint = 0;
+                    break;
+            }
+
+            ullLastStateUpdate = g_ullSystemTick;
+        }
+
         /*
         DBGPRINTLN_CTX("ADC Temp: %.2f", adc_get_temperature());
         DBGPRINTLN_CTX("EMU Temp: %.2f", emu_get_temperature());

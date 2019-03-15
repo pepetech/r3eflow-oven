@@ -16,12 +16,13 @@ typedef struct
     float fKd;
     float fPreviousError;
     float fIntegral;
+    float fRange;
     volatile float fSetpoint;
     volatile float fValue;
     volatile float fOutput;
 } pid_t;
 
-pid_t* pid_init(float fMax, float fMin, float fKiCap, float fKp, float fKi, float fKd);
+pid_t* pid_init(float fMax, float fMin, float fRange, float fKiCap, float fKp, float fKi, float fKd);
 
 void pid_free(pid_t *pPID);
 
