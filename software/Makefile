@@ -5,7 +5,7 @@ MCU_TYPE = EFM32GG11B820F2048GQ100
 HFXO_VALUE = 10000000UL
 LFXO_VALUE = 32768UL
 APP_ADDRESS = 0x00000000
-APP_NAME = reeeflow
+APP_NAME = r3eflow
 
 #######################################################
 
@@ -131,16 +131,6 @@ $(OBJECTDIR)/%.o: $(SOURCEDIR)/%.cpp
 
 debug: $(TARGET).elf
 	$(GDB) $(TARGET).elf
-
-flash: clean-bin make-dir version $(TARGET).bin $(TARGET).hex $(TARGET).lss mem-usage
-	@echo ---------------------------------------------------------------------------
-	@st-flash --reset write $(TARGET).bin $(APP_ADDRESS)
-
-erase:
-	@st-flash erase
-
-reset:
-	@st-flash reset
 
 inc-version:
 	@echo $$(($(BUILD_VERSION) + 1)) > $(TARGETDIR)/.version
