@@ -50,4 +50,9 @@
 #define MAX(x, y)           ((x) > (y) ? (x) : (y))
 #define CLAMP(x, min, max)  MIN(max, MAX(x, min))
 
+// reverse bit order, used in pn532, imported from arduino lib
+#define REVERSE_BITS_ORDER(b)   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4; \
+                                b = (b & 0xCC) >> 2 | (b & 0x33) << 2; \
+                                b = (b & 0xAA) >> 1 | (b & 0x55) << 1
+
 #endif  // __UTILS_H__

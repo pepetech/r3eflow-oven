@@ -5,7 +5,7 @@ MCU_TYPE = EFM32GG11B820F2048GQ100
 HFXO_VALUE = 10000000UL
 LFXO_VALUE = 32768UL
 APP_ADDRESS = 0x00000000
-APP_NAME = reeeflow
+APP_NAME = r3eflow
 
 #######################################################
 
@@ -56,7 +56,7 @@ GDB = arm-none-eabi-gdb
 # Compillers & Linker flags
 ASFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Os -std=gnu99 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DHFXO_VALUE=$(HFXO_VALUE) -DLFXO_VALUE=$(LFXO_VALUE) -DBUILD_VERSION=$(BUILD_VERSION)
-CXXFLAGS = $(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions -Os -std=c++17 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DHFXO_VALUE=$(HFXO_VALUE) -DLFXO_VALUE=$(LFXO_VALUE) -DBUILD_VERSION=$(BUILD_VERSION)
 LDFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
 LDLIBS = -lm -lc -lgcc -lnosys
 
@@ -131,16 +131,6 @@ $(OBJECTDIR)/%.o: $(SOURCEDIR)/%.cpp
 
 debug: $(TARGET).elf
 	$(GDB) $(TARGET).elf
-
-flash: clean-bin make-dir version $(TARGET).bin $(TARGET).hex $(TARGET).lss mem-usage
-	@echo ---------------------------------------------------------------------------
-	@st-flash --reset write $(TARGET).bin $(APP_ADDRESS)
-
-erase:
-	@st-flash erase
-
-reset:
-	@st-flash reset
 
 inc-version:
 	@echo $$(($(BUILD_VERSION) + 1)) > $(TARGETDIR)/.version
