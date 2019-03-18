@@ -23,7 +23,8 @@
         "utils.h": "c",
         "pid.h": "c",
         "gpio.h": "c",
-        "pn532.h": "c"
+        "pn532.h": "c",
+        "ldma.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }

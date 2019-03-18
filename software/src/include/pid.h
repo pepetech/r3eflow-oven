@@ -5,7 +5,9 @@
 #include <stdlib.h>
 #include "utils.h"
 
-typedef struct
+typedef struct pid_t pid_t;
+
+struct pid_t
 {
     float fDeltaTime;
     float fMax;
@@ -20,7 +22,7 @@ typedef struct
     volatile float fSetpoint;
     volatile float fValue;
     volatile float fOutput;
-} pid_t;
+};
 
 pid_t* pid_init(float fMax, float fMin, float fRange, float fKiCap, float fKp, float fKi, float fKd);
 
