@@ -257,7 +257,7 @@ int init()
     fDVDDHighThresh = fDVDDLowThresh + 0.026f; // Hysteresis from datasheet
     fIOVDDHighThresh = fIOVDDLowThresh + 0.026f; // Hysteresis from datasheet
 
-    usart0_init(1000000, 0, USART_SPI_MSB_FIRST, 0, 0, 0);
+    usart0_init(1000000, 0, USART_SPI_LSB_FIRST, 0, 0, 0);
     i2c1_init(I2C_NORMAL, 1, 1); // Init I2C1 at 100 kHz on location 1
 
     char szDeviceName[32];
@@ -352,16 +352,18 @@ int init()
 int main()
 {
     PERI_REG_BIT_SET(&(GPIO->P[4].DOUT)) = BIT(13);
+    PERI_REG_BIT_SET(&(GPIO->P[0].DOUT)) = BIT(2);
     delay_ms(100);
 
     PERI_REG_BIT_CLEAR(&(GPIO->P[4].DOUT)) = BIT(13);
     usart0_spi_transfer_byte(0x05);
-    uint8_t thegay = usart0_spi_transfer_byte(0xDD);
-    uint8_t thegay2 = usart0_spi_transfer_byte(0xAB);
+    uint8_t byte1 = usart0_spi_transfer_byte(0x00);
+    uint8_t byte2 = usart0_spi_transfer_byte(0x00);
     PERI_REG_BIT_SET(&(GPIO->P[4].DOUT)) = BIT(13);
 
-    DBGPRINTLN_CTX("the gay is 0x%02X", thegay);
-    DBGPRINTLN_CTX("the gay 2 is 0x%02X", thegay2);
+    DBGPRINTLN_CTX("PN532 test");
+    DBGPRINTLN_CTX("byte 1: 0x%02X", byte1);
+    DBGPRINTLN_CTX("byte 2: 0x%02X", byte2);
 
     DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));
 
@@ -481,14 +483,15 @@ int main()
             ullLastBlink = g_ullSystemTick;
         }
 
-        if(GPIO->P[0].DIN & BIT(2) && g_ullSystemTick > (ullLastInput + 500))
-        {
-            pOvenPID->fSetpoint += 2.f;
+//        if(GPIO->P[0].DIN & BIT(2) && g_ullSystemTick > (ullLastInput + 500))
+//        {
+//            pOvenPID->fSetpoint += 2.f;
+//
+//            ullLastInput = g_ullSystemTick;
+//        }
 
-            ullLastInput = g_ullSystemTick;
-        }
-
-        if(g_ullSystemTick > (ullLastTempCheck + 10))
+        //if(g_ullSystemTick > (ullLastTempCheck + 10))
+        if(0)
         {
             uint8_t ubStatus = mcp9600_get_status(0);
 
@@ -521,7 +524,8 @@ int main()
             ullLastTempCheck = g_ullSystemTick;
         }
 
-        if(g_ullSystemTick > (ullLastStateUpdate + 500))
+        //if(g_ullSystemTick > (ullLastStateUpdate + 500))
+        if(0)
         {
             static uint64_t ullTimer = 0;
             static uint8_t ubState = 0;

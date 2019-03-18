@@ -21,7 +21,9 @@
         "core_cm4.h": "c",
         "atomic.h": "c",
         "utils.h": "c",
-        "pid.h": "c"
+        "pid.h": "c",
+        "gpio.h": "c",
+        "pn532.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }
