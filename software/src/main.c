@@ -19,6 +19,7 @@
 #include "i2c.h"
 #include "usart.h"
 #include "mcp9600.h"
+#include "pn532.h"
 #include "pid.h"
 #include "pac_lookup.h"
 
@@ -346,24 +347,17 @@ int init()
     else
         DBGPRINTLN_CTX("Oven PID init NOK!");
 
-    return 0;
 
+    if(pn532_init())
+        DBGPRINTLN_CTX("PN532 init OK!");
+    else
+        DBGPRINTLN_CTX("PN532 init NOK!");
+
+    return 0;
 }
 int main()
 {
-    PERI_REG_BIT_SET(&(GPIO->P[4].DOUT)) = BIT(13);
-    PERI_REG_BIT_SET(&(GPIO->P[0].DOUT)) = BIT(2);
-    delay_ms(100);
-
-    PERI_REG_BIT_CLEAR(&(GPIO->P[4].DOUT)) = BIT(13);
-    usart0_spi_transfer_byte(0x05);
-    uint8_t byte1 = usart0_spi_transfer_byte(0x00);
-    uint8_t byte2 = usart0_spi_transfer_byte(0x00);
-    PERI_REG_BIT_SET(&(GPIO->P[4].DOUT)) = BIT(13);
-
-    DBGPRINTLN_CTX("PN532 test");
-    DBGPRINTLN_CTX("byte 1: 0x%02X", byte1);
-    DBGPRINTLN_CTX("byte 2: 0x%02X", byte2);
+    DBGPRINTLN_CTX("PN532 ID 0x%08X", pn532_getVersion());
 
     DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));
 

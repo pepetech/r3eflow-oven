@@ -1494,85 +1494,6 @@ Source: http://www.bourns.com/data/global/PDFs/MFMSMF.pdf</description>
 </deviceset>
 </devicesets>
 </library>
-<library name="Power &gt; LDO Voltage Regulators">
-<packages>
-<package name="SOT230P700X180-4N">
-<smd name="1" x="-3.2004" y="2.3114" dx="1.6256" dy="0.889" layer="1"/>
-<smd name="2" x="-3.2004" y="0" dx="1.6256" dy="0.889" layer="1"/>
-<smd name="3" x="-3.2004" y="-2.3114" dx="1.6256" dy="0.889" layer="1"/>
-<smd name="4" x="3.2004" y="0" dx="1.6256" dy="3.175" layer="1"/>
-<wire x1="-1.8542" y1="1.8796" x2="-1.8542" y2="2.7432" width="0.1524" layer="51"/>
-<wire x1="-1.8542" y1="2.7432" x2="-3.6576" y2="2.7432" width="0.1524" layer="51"/>
-<wire x1="-3.6576" y1="2.7432" x2="-3.6576" y2="1.8796" width="0.1524" layer="51"/>
-<wire x1="-3.6576" y1="1.8796" x2="-1.8542" y2="1.8796" width="0.1524" layer="51"/>
-<wire x1="-1.8542" y1="-0.4318" x2="-1.8542" y2="0.4318" width="0.1524" layer="51"/>
-<wire x1="-1.8542" y1="0.4318" x2="-3.6576" y2="0.4318" width="0.1524" layer="51"/>
-<wire x1="-3.6576" y1="0.4318" x2="-3.6576" y2="-0.4318" width="0.1524" layer="51"/>
-<wire x1="-3.6576" y1="-0.4318" x2="-1.8542" y2="-0.4318" width="0.1524" layer="51"/>
-<wire x1="-1.8542" y1="-2.7432" x2="-1.8542" y2="-1.8796" width="0.1524" layer="51"/>
-<wire x1="-1.8542" y1="-1.8796" x2="-3.6576" y2="-1.8796" width="0.1524" layer="51"/>
-<wire x1="-3.6576" y1="-1.8796" x2="-3.6576" y2="-2.7432" width="0.1524" layer="51"/>
-<wire x1="-3.6576" y1="-2.7432" x2="-1.8542" y2="-2.7432" width="0.1524" layer="51"/>
-<wire x1="1.8542" y1="1.5748" x2="1.8542" y2="-1.5748" width="0.1524" layer="51"/>
-<wire x1="1.8542" y1="-1.5748" x2="3.6576" y2="-1.5748" width="0.1524" layer="51"/>
-<wire x1="3.6576" y1="-1.5748" x2="3.6576" y2="1.6002" width="0.1524" layer="51"/>
-<wire x1="3.6576" y1="1.6002" x2="1.8542" y2="1.5748" width="0.1524" layer="51"/>
-<wire x1="-1.8542" y1="-3.3528" x2="1.8542" y2="-3.3528" width="0.1524" layer="51"/>
-<wire x1="1.8542" y1="-3.3528" x2="1.8542" y2="3.3528" width="0.1524" layer="51"/>
-<wire x1="1.8542" y1="3.3528" x2="-1.8542" y2="3.3528" width="0.1524" layer="51"/>
-<wire x1="-1.8542" y1="3.3528" x2="-1.8542" y2="-3.3528" width="0.1524" layer="51"/>
-<text x="-4.0132" y="2.3876" size="1.27" layer="51" ratio="6" rot="SR0">*</text>
-<wire x1="-1.8542" y1="-3.3528" x2="1.8542" y2="-3.3528" width="0.1524" layer="21"/>
-<wire x1="1.8542" y1="-3.3528" x2="1.8542" y2="3.3528" width="0.1524" layer="21"/>
-<wire x1="1.8542" y1="3.3528" x2="-1.8542" y2="3.3528" width="0.1524" layer="21"/>
-<wire x1="-1.8542" y1="3.3528" x2="-1.8542" y2="-3.3528" width="0.1524" layer="21"/>
-<text x="-4.0132" y="2.3876" size="1.27" layer="21" ratio="6" rot="SR0">*</text>
-<text x="-4.8006" y="3.556" size="2.0828" layer="25" ratio="10" rot="SR0">&gt;NAME</text>
-<text x="-5.715" y="-5.8674" size="2.0828" layer="27" ratio="10" rot="SR0">&gt;VALUE</text>
-</package>
-</packages>
-<symbols>
-<symbol name="MCP-REG">
-<pin name="VIN" x="-22.86" y="0" length="middle" direction="in"/>
-<pin name="GND_(TAB)" x="-22.86" y="-5.08" length="middle"/>
-<pin name="GND_(TAB)_2" x="-22.86" y="-7.62" length="middle"/>
-<pin name="VOUT" x="22.86" y="-5.08" length="middle" rot="R180"/>
-<wire x1="-17.78" y1="5.08" x2="-17.78" y2="-12.7" width="0.4064" layer="94"/>
-<wire x1="-17.78" y1="-12.7" x2="17.78" y2="-12.7" width="0.4064" layer="94"/>
-<wire x1="17.78" y1="-12.7" x2="17.78" y2="5.08" width="0.4064" layer="94"/>
-<wire x1="17.78" y1="5.08" x2="-17.78" y2="5.08" width="0.4064" layer="94"/>
-<text x="-4.5974" y="6.2992" size="2.0828" layer="95" ratio="10" rot="SR0">&gt;NAME</text>
-<text x="-5.588" y="-15.3416" size="2.0828" layer="96" ratio="10" rot="SR0">&gt;VALUE</text>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="MIC39100" prefix="U">
-<description>IC, LDO VOLT REG, 3.3V, 0.3A,</description>
-<gates>
-<gate name="G$1" symbol="MCP-REG" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="SOT230P700X180-4N">
-<connects>
-<connect gate="G$1" pin="GND_(TAB)" pad="2"/>
-<connect gate="G$1" pin="GND_(TAB)_2" pad="4"/>
-<connect gate="G$1" pin="VIN" pad="1"/>
-<connect gate="G$1" pin="VOUT" pad="3"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="MPN" value="MCP1824ST-3302E/DB" constant="no"/>
-<attribute name="OC_FARNELL" value="1578379" constant="no"/>
-<attribute name="OC_NEWARK" value="05N1293" constant="no"/>
-<attribute name="PACKAGE" value="SOT-223-3" constant="no"/>
-<attribute name="SUPPLIER" value="Microchip" constant="no"/>
-</technology>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 <library name="Utility &gt; Power Symbols">
 <packages>
 </packages>
@@ -6895,12 +6816,7 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <part name="F1" library="Circuit Protection &gt; Resettable Fuses - PPTC" deviceset="PTC" device="1812" value="1A"/>
 <part name="C13" library="Passive Components &gt; Capacitors &gt; Multilayer Ceramic Capacitors MLCC" deviceset="MLCC" device="0603" value="100n"/>
 <part name="C14" library="Passive Components &gt; Capacitors &gt; Aluminium Electrolytic Capacitors" deviceset="CAPACITOR_EL" device="10X10" value="100u"/>
-<part name="C15" library="Passive Components &gt; Capacitors &gt; Multilayer Ceramic Capacitors MLCC" deviceset="MLCC" device="0603" value="100n"/>
-<part name="U3" library="Power &gt; LDO Voltage Regulators" deviceset="MIC39100" device=""/>
 <part name="GND1" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
-<part name="GND2" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
-<part name="GND3" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
-<part name="GND4" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
 <part name="GND5" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
 <part name="GND6" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
 <part name="GND7" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
@@ -7055,12 +6971,7 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <part name="GND61" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
 <part name="GND62" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
 <part name="SUPPLY62" library="Utility &gt; Power Symbols" deviceset="3.6V" device=""/>
-<part name="SUPPLY2" library="Utility &gt; Power Symbols" deviceset="3.6V" device=""/>
-<part name="SUPPLY1" library="Utility &gt; Power Symbols" deviceset="2.8V" device=""/>
-<part name="C16" library="Passive Components &gt; Capacitors &gt; Tantalum Capacitors" deviceset="CAPACITOR_TAN" device="3216" value="10u"/>
 <part name="C33" library="Passive Components &gt; Capacitors &gt; Tantalum Capacitors" deviceset="CAPACITOR_TAN" device="3216" value="10u"/>
-<part name="C32" library="Passive Components &gt; Capacitors &gt; Multilayer Ceramic Capacitors MLCC" deviceset="MLCC" device="0603" value="100n"/>
-<part name="GND63" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
 <part name="SUPPLY63" library="Utility &gt; Power Symbols" deviceset="2.8V" device=""/>
 <part name="SUPPLY4" library="Utility &gt; Power Symbols" deviceset="2.8V" device=""/>
 <part name="SUPPLY5" library="Utility &gt; Power Symbols" deviceset="2.8V" device=""/>
@@ -7221,6 +7132,10 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <part name="GND87" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
 <part name="R85" library="Passive Components &gt; Resistors &gt; Chip Resistors" deviceset="RESISTOR" device="0603"/>
 <part name="SUPPLY71" library="Utility &gt; Power Symbols" deviceset="2.8V" device=""/>
+<part name="SUPPLY72" library="Utility &gt; Power Symbols" deviceset="5V" device=""/>
+<part name="GND4" library="Utility &gt; Power Symbols" deviceset="GND" device=""/>
+<part name="C16" library="Passive Components &gt; Capacitors &gt; Tantalum Capacitors" deviceset="CAPACITOR_TAN" device="3216" value="10u"/>
+<part name="SUPPLY1" library="Utility &gt; Power Symbols" deviceset="2.8V" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -7315,8 +7230,8 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <instance part="SUPPLY65" gate="G$1" x="294.64" y="43.18" smashed="yes">
 <attribute name="VALUE" x="294.64" y="45.974" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="SUPPLY23" gate="G$1" x="144.78" y="66.04" smashed="yes">
-<attribute name="VALUE" x="144.78" y="68.834" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY23" gate="G$1" x="139.7" y="45.72" smashed="yes">
+<attribute name="VALUE" x="139.7" y="48.514" size="1.778" layer="96" align="bottom-center"/>
 </instance>
 <instance part="SUPPLY66" gate="G$1" x="358.14" y="200.66" smashed="yes">
 <attribute name="VALUE" x="358.14" y="203.454" size="1.778" layer="96" align="bottom-center"/>
@@ -7333,65 +7248,65 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <instance part="SUPPLY68" gate="G$1" x="33.02" y="238.76" smashed="yes">
 <attribute name="VALUE" x="33.02" y="241.554" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="SUPPLY20" gate="G$1" x="121.92" y="66.04" smashed="yes">
-<attribute name="VALUE" x="121.92" y="68.834" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY20" gate="G$1" x="116.84" y="66.04" smashed="yes">
+<attribute name="VALUE" x="116.84" y="68.834" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="C1" gate="G$1" x="121.92" y="60.96" smashed="yes">
-<attribute name="NAME" x="120.396" y="58.42" size="1.27" layer="95" rot="R90"/>
-<attribute name="VALUE" x="124.46" y="58.42" size="1.27" layer="96" rot="R90"/>
+<instance part="C1" gate="G$1" x="116.84" y="60.96" smashed="yes">
+<attribute name="NAME" x="115.316" y="58.42" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="119.38" y="58.42" size="1.27" layer="96" rot="R90"/>
 </instance>
-<instance part="GND20" gate="1" x="121.92" y="53.34" smashed="yes">
-<attribute name="VALUE" x="121.92" y="53.086" size="1.778" layer="96" align="top-center"/>
+<instance part="GND20" gate="1" x="116.84" y="53.34" smashed="yes">
+<attribute name="VALUE" x="116.84" y="53.086" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="SUPPLY21" gate="G$1" x="129.54" y="66.04" smashed="yes">
-<attribute name="VALUE" x="129.54" y="68.834" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY21" gate="G$1" x="124.46" y="66.04" smashed="yes">
+<attribute name="VALUE" x="124.46" y="68.834" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="C2" gate="G$1" x="129.54" y="60.96" smashed="yes">
-<attribute name="NAME" x="128.016" y="58.42" size="1.27" layer="95" rot="R90"/>
-<attribute name="VALUE" x="132.08" y="58.42" size="1.27" layer="96" rot="R90"/>
+<instance part="C2" gate="G$1" x="124.46" y="60.96" smashed="yes">
+<attribute name="NAME" x="122.936" y="58.42" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="127" y="58.42" size="1.27" layer="96" rot="R90"/>
 </instance>
-<instance part="GND21" gate="1" x="129.54" y="53.34" smashed="yes">
-<attribute name="VALUE" x="129.54" y="53.086" size="1.778" layer="96" align="top-center"/>
+<instance part="GND21" gate="1" x="124.46" y="53.34" smashed="yes">
+<attribute name="VALUE" x="124.46" y="53.086" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="SUPPLY22" gate="G$1" x="114.3" y="66.04" smashed="yes">
-<attribute name="VALUE" x="114.3" y="68.834" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY22" gate="G$1" x="109.22" y="66.04" smashed="yes">
+<attribute name="VALUE" x="109.22" y="68.834" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="C3" gate="G$1" x="114.3" y="60.96" smashed="yes">
-<attribute name="NAME" x="112.776" y="58.42" size="1.27" layer="95" rot="R90"/>
-<attribute name="VALUE" x="116.84" y="58.42" size="1.27" layer="96" rot="R90"/>
+<instance part="C3" gate="G$1" x="109.22" y="60.96" smashed="yes">
+<attribute name="NAME" x="107.696" y="58.42" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="111.76" y="58.42" size="1.27" layer="96" rot="R90"/>
 </instance>
-<instance part="GND22" gate="1" x="114.3" y="53.34" smashed="yes">
-<attribute name="VALUE" x="114.3" y="53.086" size="1.778" layer="96" align="top-center"/>
+<instance part="GND22" gate="1" x="109.22" y="53.34" smashed="yes">
+<attribute name="VALUE" x="109.22" y="53.086" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="SUPPLY27" gate="G$1" x="106.68" y="66.04" smashed="yes">
-<attribute name="VALUE" x="106.68" y="68.834" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY27" gate="G$1" x="101.6" y="66.04" smashed="yes">
+<attribute name="VALUE" x="101.6" y="68.834" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="C4" gate="G$1" x="106.68" y="60.96" smashed="yes">
-<attribute name="NAME" x="105.156" y="58.42" size="1.27" layer="95" rot="R90"/>
-<attribute name="VALUE" x="109.22" y="58.42" size="1.27" layer="96" rot="R90"/>
+<instance part="C4" gate="G$1" x="101.6" y="60.96" smashed="yes">
+<attribute name="NAME" x="100.076" y="58.42" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="104.14" y="58.42" size="1.27" layer="96" rot="R90"/>
 </instance>
-<instance part="GND23" gate="1" x="106.68" y="53.34" smashed="yes">
-<attribute name="VALUE" x="106.68" y="53.086" size="1.778" layer="96" align="top-center"/>
+<instance part="GND23" gate="1" x="101.6" y="53.34" smashed="yes">
+<attribute name="VALUE" x="101.6" y="53.086" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="SUPPLY28" gate="G$1" x="99.06" y="66.04" smashed="yes">
-<attribute name="VALUE" x="99.06" y="68.834" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY28" gate="G$1" x="93.98" y="66.04" smashed="yes">
+<attribute name="VALUE" x="93.98" y="68.834" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="C5" gate="G$1" x="99.06" y="60.96" smashed="yes">
-<attribute name="NAME" x="97.536" y="58.42" size="1.27" layer="95" rot="R90"/>
-<attribute name="VALUE" x="101.6" y="58.42" size="1.27" layer="96" rot="R90"/>
+<instance part="C5" gate="G$1" x="93.98" y="60.96" smashed="yes">
+<attribute name="NAME" x="92.456" y="58.42" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="96.52" y="58.42" size="1.27" layer="96" rot="R90"/>
 </instance>
-<instance part="GND24" gate="1" x="99.06" y="53.34" smashed="yes">
-<attribute name="VALUE" x="99.06" y="53.086" size="1.778" layer="96" align="top-center"/>
+<instance part="GND24" gate="1" x="93.98" y="53.34" smashed="yes">
+<attribute name="VALUE" x="93.98" y="53.086" size="1.778" layer="96" align="top-center"/>
 </instance>
-<instance part="SUPPLY29" gate="G$1" x="91.44" y="66.04" smashed="yes">
-<attribute name="VALUE" x="91.44" y="68.834" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY29" gate="G$1" x="86.36" y="66.04" smashed="yes">
+<attribute name="VALUE" x="86.36" y="68.834" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="C6" gate="G$1" x="91.44" y="60.96" smashed="yes">
-<attribute name="NAME" x="89.916" y="58.42" size="1.27" layer="95" rot="R90"/>
-<attribute name="VALUE" x="93.98" y="58.42" size="1.27" layer="96" rot="R90"/>
+<instance part="C6" gate="G$1" x="86.36" y="60.96" smashed="yes">
+<attribute name="NAME" x="84.836" y="58.42" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="88.9" y="58.42" size="1.27" layer="96" rot="R90"/>
 </instance>
-<instance part="GND25" gate="1" x="91.44" y="53.34" smashed="yes">
-<attribute name="VALUE" x="91.44" y="53.086" size="1.778" layer="96" align="top-center"/>
+<instance part="GND25" gate="1" x="86.36" y="53.34" smashed="yes">
+<attribute name="VALUE" x="86.36" y="53.086" size="1.778" layer="96" align="top-center"/>
 </instance>
 <instance part="C17" gate="G$1" x="208.28" y="43.18" smashed="yes">
 <attribute name="NAME" x="206.756" y="40.64" size="1.27" layer="95" rot="R90"/>
@@ -7459,6 +7374,19 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <instance part="SUPPLY71" gate="G$1" x="345.44" y="134.62" smashed="yes">
 <attribute name="VALUE" x="345.44" y="137.414" size="1.778" layer="96" align="bottom-center"/>
 </instance>
+<instance part="SUPPLY72" gate="G$1" x="137.16" y="81.28" smashed="yes">
+<attribute name="VALUE" x="137.16" y="84.074" size="1.778" layer="96" align="bottom-center"/>
+</instance>
+<instance part="GND4" gate="1" x="73.66" y="53.34" smashed="yes">
+<attribute name="VALUE" x="73.66" y="53.086" size="1.778" layer="96" align="top-center"/>
+</instance>
+<instance part="C16" gate="G$1" x="73.66" y="60.96" smashed="yes">
+<attribute name="NAME" x="71.882" y="58.42" size="1.27" layer="95" rot="R90"/>
+<attribute name="VALUE" x="76.708" y="58.42" size="1.27" layer="96" rot="R90"/>
+</instance>
+<instance part="SUPPLY1" gate="G$1" x="73.66" y="66.04" smashed="yes">
+<attribute name="VALUE" x="73.66" y="68.834" size="1.778" layer="96" align="bottom-center"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -7470,8 +7398,8 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <wire x1="10.16" y1="226.06" x2="10.16" y2="223.52" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<wire x1="142.24" y1="104.14" x2="99.06" y2="104.14" width="0.1524" layer="91"/>
 <label x="99.06" y="104.14" size="0.8128" layer="95" rot="R180" xref="yes"/>
+<wire x1="142.24" y1="104.14" x2="99.06" y2="104.14" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="I2C0-SCL-SENS" class="0">
@@ -7481,8 +7409,8 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <wire x1="17.78" y1="226.06" x2="17.78" y2="223.52" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<wire x1="142.24" y1="101.6" x2="129.54" y2="101.6" width="0.1524" layer="91"/>
 <label x="129.54" y="101.6" size="0.8128" layer="95" rot="R180" xref="yes"/>
+<wire x1="142.24" y1="101.6" x2="129.54" y2="101.6" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="!RESET" class="0">
@@ -7732,32 +7660,32 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <segment>
 <pinref part="GND20" gate="1" pin="GND"/>
 <pinref part="C1" gate="G$1" pin="P$2"/>
-<wire x1="121.92" y1="55.88" x2="121.92" y2="58.42" width="0.1524" layer="91"/>
+<wire x1="116.84" y1="55.88" x2="116.84" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND21" gate="1" pin="GND"/>
 <pinref part="C2" gate="G$1" pin="P$2"/>
-<wire x1="129.54" y1="55.88" x2="129.54" y2="58.42" width="0.1524" layer="91"/>
+<wire x1="124.46" y1="55.88" x2="124.46" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND22" gate="1" pin="GND"/>
 <pinref part="C3" gate="G$1" pin="P$2"/>
-<wire x1="114.3" y1="55.88" x2="114.3" y2="58.42" width="0.1524" layer="91"/>
+<wire x1="109.22" y1="55.88" x2="109.22" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND23" gate="1" pin="GND"/>
 <pinref part="C4" gate="G$1" pin="P$2"/>
-<wire x1="106.68" y1="55.88" x2="106.68" y2="58.42" width="0.1524" layer="91"/>
+<wire x1="101.6" y1="55.88" x2="101.6" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND24" gate="1" pin="GND"/>
 <pinref part="C5" gate="G$1" pin="P$2"/>
-<wire x1="99.06" y1="55.88" x2="99.06" y2="58.42" width="0.1524" layer="91"/>
+<wire x1="93.98" y1="55.88" x2="93.98" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND25" gate="1" pin="GND"/>
 <pinref part="C6" gate="G$1" pin="P$2"/>
-<wire x1="91.44" y1="55.88" x2="91.44" y2="58.42" width="0.1524" layer="91"/>
+<wire x1="86.36" y1="55.88" x2="86.36" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="GND33" gate="1" pin="GND"/>
@@ -7779,29 +7707,34 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <wire x1="345.44" y1="106.68" x2="345.44" y2="93.98" width="0.1524" layer="91"/>
 <junction x="345.44" y="93.98"/>
 </segment>
+<segment>
+<wire x1="73.66" y1="55.88" x2="73.66" y2="58.42" width="0.1524" layer="91"/>
+<pinref part="GND4" gate="1" pin="GND"/>
+<pinref part="C16" gate="G$1" pin="CA"/>
+</segment>
 </net>
 <net name="TIM3_CC2_BUZZ" class="0">
 <segment>
-<wire x1="142.24" y1="182.88" x2="99.06" y2="182.88" width="0.1524" layer="91"/>
 <label x="99.06" y="182.88" size="0.8128" layer="95" rot="R180" xref="yes"/>
+<wire x1="142.24" y1="182.88" x2="99.06" y2="182.88" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="!TFT_RESET" class="0">
 <segment>
-<wire x1="142.24" y1="190.5" x2="129.54" y2="190.5" width="0.1524" layer="91"/>
 <label x="129.54" y="190.5" size="0.8128" layer="95" rot="R180" xref="yes"/>
+<wire x1="142.24" y1="190.5" x2="129.54" y2="190.5" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="!TFT-IRQ" class="0">
 <segment>
-<wire x1="142.24" y1="187.96" x2="99.06" y2="187.96" width="0.1524" layer="91"/>
 <label x="99.06" y="187.96" size="0.8128" layer="95" rot="R180" xref="yes"/>
+<wire x1="142.24" y1="187.96" x2="99.06" y2="187.96" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="TFT-DC" class="0">
 <segment>
-<wire x1="142.24" y1="185.42" x2="129.54" y2="185.42" width="0.1524" layer="91"/>
 <label x="129.54" y="185.42" size="0.8128" layer="95" rot="R180" xref="yes"/>
+<wire x1="142.24" y1="185.42" x2="129.54" y2="185.42" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="TC1-ALRT1" class="0">
@@ -8059,32 +7992,6 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <pinref part="SUPPLY25" gate="G$1" pin="2.8V"/>
 </segment>
 <segment>
-<wire x1="144.78" y1="50.8" x2="144.78" y2="58.42" width="0.1524" layer="91"/>
-<wire x1="144.78" y1="58.42" x2="144.78" y2="63.5" width="0.1524" layer="91"/>
-<wire x1="144.78" y1="63.5" x2="144.78" y2="66.04" width="0.1524" layer="91"/>
-<wire x1="152.4" y1="50.8" x2="144.78" y2="50.8" width="0.1524" layer="91"/>
-<junction x="144.78" y="50.8"/>
-<wire x1="152.4" y1="45.72" x2="144.78" y2="45.72" width="0.1524" layer="91"/>
-<wire x1="144.78" y1="45.72" x2="144.78" y2="50.8" width="0.1524" layer="91"/>
-<wire x1="152.4" y1="40.64" x2="144.78" y2="40.64" width="0.1524" layer="91"/>
-<wire x1="144.78" y1="40.64" x2="144.78" y2="43.18" width="0.1524" layer="91"/>
-<junction x="144.78" y="45.72"/>
-<wire x1="144.78" y1="43.18" x2="144.78" y2="45.72" width="0.1524" layer="91"/>
-<wire x1="152.4" y1="43.18" x2="144.78" y2="43.18" width="0.1524" layer="91"/>
-<junction x="144.78" y="43.18"/>
-<pinref part="U1" gate="G$1" pin="IOVDD0@0"/>
-<pinref part="U1" gate="G$1" pin="DVDD"/>
-<pinref part="U1" gate="G$1" pin="IOVDD0@1"/>
-<pinref part="U1" gate="G$1" pin="IOVDD0@2"/>
-<pinref part="U1" gate="G$1" pin="VREGVDD"/>
-<wire x1="152.4" y1="58.42" x2="144.78" y2="58.42" width="0.1524" layer="91"/>
-<junction x="144.78" y="58.42"/>
-<pinref part="U1" gate="G$1" pin="AVDD"/>
-<wire x1="152.4" y1="63.5" x2="144.78" y2="63.5" width="0.1524" layer="91"/>
-<junction x="144.78" y="63.5"/>
-<pinref part="SUPPLY23" gate="G$1" pin="2.8V"/>
-</segment>
-<segment>
 <wire x1="363.22" y1="198.12" x2="358.14" y2="198.12" width="0.1524" layer="91"/>
 <wire x1="358.14" y1="198.12" x2="358.14" y2="200.66" width="0.1524" layer="91"/>
 <pinref part="SUPPLY66" gate="G$1" pin="2.8V"/>
@@ -8113,32 +8020,32 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <segment>
 <pinref part="C1" gate="G$1" pin="P$1"/>
 <pinref part="SUPPLY20" gate="G$1" pin="2.8V"/>
-<wire x1="121.92" y1="63.5" x2="121.92" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="116.84" y1="63.5" x2="116.84" y2="66.04" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C2" gate="G$1" pin="P$1"/>
 <pinref part="SUPPLY21" gate="G$1" pin="2.8V"/>
-<wire x1="129.54" y1="63.5" x2="129.54" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="124.46" y1="63.5" x2="124.46" y2="66.04" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C3" gate="G$1" pin="P$1"/>
 <pinref part="SUPPLY22" gate="G$1" pin="2.8V"/>
-<wire x1="114.3" y1="63.5" x2="114.3" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="109.22" y1="63.5" x2="109.22" y2="66.04" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C4" gate="G$1" pin="P$1"/>
 <pinref part="SUPPLY27" gate="G$1" pin="2.8V"/>
-<wire x1="106.68" y1="63.5" x2="106.68" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="101.6" y1="63.5" x2="101.6" y2="66.04" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C5" gate="G$1" pin="P$1"/>
 <pinref part="SUPPLY28" gate="G$1" pin="2.8V"/>
-<wire x1="99.06" y1="63.5" x2="99.06" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="93.98" y1="63.5" x2="93.98" y2="66.04" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C6" gate="G$1" pin="P$1"/>
 <pinref part="SUPPLY29" gate="G$1" pin="2.8V"/>
-<wire x1="91.44" y1="63.5" x2="91.44" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="86.36" y1="63.5" x2="86.36" y2="66.04" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="C18" gate="G$1" pin="P$1"/>
@@ -8160,6 +8067,43 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <pinref part="R85" gate="G$1" pin="P$2"/>
 <wire x1="345.44" y1="132.08" x2="345.44" y2="134.62" width="0.1524" layer="91"/>
 <pinref part="SUPPLY71" gate="G$1" pin="2.8V"/>
+</segment>
+<segment>
+<wire x1="144.78" y1="50.8" x2="144.78" y2="58.42" width="0.1524" layer="91"/>
+<wire x1="144.78" y1="58.42" x2="144.78" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="152.4" y1="50.8" x2="144.78" y2="50.8" width="0.1524" layer="91"/>
+<junction x="144.78" y="50.8"/>
+<wire x1="152.4" y1="45.72" x2="144.78" y2="45.72" width="0.1524" layer="91"/>
+<wire x1="144.78" y1="45.72" x2="144.78" y2="50.8" width="0.1524" layer="91"/>
+<wire x1="152.4" y1="40.64" x2="144.78" y2="40.64" width="0.1524" layer="91"/>
+<wire x1="144.78" y1="40.64" x2="144.78" y2="43.18" width="0.1524" layer="91"/>
+<junction x="144.78" y="45.72"/>
+<wire x1="144.78" y1="43.18" x2="144.78" y2="45.72" width="0.1524" layer="91"/>
+<wire x1="152.4" y1="43.18" x2="144.78" y2="43.18" width="0.1524" layer="91"/>
+<junction x="144.78" y="43.18"/>
+<pinref part="U1" gate="G$1" pin="IOVDD0@0"/>
+<pinref part="U1" gate="G$1" pin="DVDD"/>
+<pinref part="U1" gate="G$1" pin="IOVDD0@1"/>
+<pinref part="U1" gate="G$1" pin="IOVDD0@2"/>
+<pinref part="U1" gate="G$1" pin="VREGVDD"/>
+<wire x1="152.4" y1="58.42" x2="144.78" y2="58.42" width="0.1524" layer="91"/>
+<junction x="144.78" y="58.42"/>
+<pinref part="U1" gate="G$1" pin="AVDD"/>
+<wire x1="152.4" y1="63.5" x2="144.78" y2="63.5" width="0.1524" layer="91"/>
+<junction x="144.78" y="63.5"/>
+<pinref part="U1" gate="G$1" pin="VREGO"/>
+<wire x1="152.4" y1="68.58" x2="144.78" y2="68.58" width="0.1524" layer="91"/>
+<wire x1="144.78" y1="68.58" x2="144.78" y2="63.5" width="0.1524" layer="91"/>
+<junction x="144.78" y="63.5"/>
+<wire x1="144.78" y1="40.64" x2="139.7" y2="40.64" width="0.1524" layer="91"/>
+<junction x="144.78" y="40.64"/>
+<wire x1="139.7" y1="40.64" x2="139.7" y2="45.72" width="0.1524" layer="91"/>
+<pinref part="SUPPLY23" gate="G$1" pin="2.8V"/>
+</segment>
+<segment>
+<wire x1="73.66" y1="63.5" x2="73.66" y2="66.04" width="0.1524" layer="91"/>
+<pinref part="C16" gate="G$1" pin="AN"/>
+<pinref part="SUPPLY1" gate="G$1" pin="2.8V"/>
 </segment>
 </net>
 <net name="FAN0-GND" class="0">
@@ -8237,6 +8181,14 @@ classified as MSL (Moisture Sensitivity Level) 1 under J STD
 <wire x1="347.98" y1="116.84" x2="345.44" y2="116.84" width="0.1524" layer="91"/>
 <wire x1="345.44" y1="116.84" x2="345.44" y2="121.92" width="0.1524" layer="91"/>
 <pinref part="R85" gate="G$1" pin="P$1"/>
+</segment>
+</net>
+<net name="5V" class="0">
+<segment>
+<pinref part="U1" gate="G$1" pin="VREGI"/>
+<wire x1="152.4" y1="71.12" x2="137.16" y2="71.12" width="0.1524" layer="91"/>
+<wire x1="137.16" y1="71.12" x2="137.16" y2="81.28" width="0.1524" layer="91"/>
+<pinref part="SUPPLY72" gate="G$1" pin="5V"/>
 </segment>
 </net>
 </nets>
@@ -10914,25 +10866,8 @@ DS pag. 5</text>
 <attribute name="NAME" x="211.582" y="215.9" size="1.27" layer="95" rot="R90"/>
 <attribute name="VALUE" x="216.154" y="215.9" size="1.27" layer="96" rot="R90"/>
 </instance>
-<instance part="C15" gate="G$1" x="149.86" y="35.56" smashed="yes">
-<attribute name="NAME" x="148.336" y="33.02" size="1.27" layer="95" rot="R90"/>
-<attribute name="VALUE" x="152.4" y="33.02" size="1.27" layer="96" rot="R90"/>
-</instance>
-<instance part="U3" gate="G$1" x="185.42" y="40.64" smashed="yes">
-<attribute name="NAME" x="180.8226" y="46.9392" size="2.0828" layer="95" ratio="10" rot="SR0"/>
-<attribute name="VALUE" x="179.832" y="25.2984" size="2.0828" layer="96" ratio="10" rot="SR0"/>
-</instance>
 <instance part="GND1" gate="1" x="220.98" y="208.28" smashed="yes">
 <attribute name="VALUE" x="220.98" y="208.026" size="1.778" layer="96" align="top-center"/>
-</instance>
-<instance part="GND2" gate="1" x="149.86" y="22.86" smashed="yes">
-<attribute name="VALUE" x="149.86" y="22.606" size="1.778" layer="96" align="top-center"/>
-</instance>
-<instance part="GND3" gate="1" x="157.48" y="22.86" smashed="yes">
-<attribute name="VALUE" x="157.48" y="22.606" size="1.778" layer="96" align="top-center"/>
-</instance>
-<instance part="GND4" gate="1" x="210.82" y="22.86" smashed="yes">
-<attribute name="VALUE" x="210.82" y="22.606" size="1.778" layer="96" align="top-center"/>
 </instance>
 <instance part="U$7" gate="G$1" x="180.34" y="218.44" smashed="yes"/>
 <instance part="J3" gate="-1" x="157.48" y="223.52" smashed="yes" rot="R180">
@@ -11003,26 +10938,9 @@ DS pag. 5</text>
 <instance part="SUPPLY62" gate="G$1" x="233.68" y="111.76" smashed="yes">
 <attribute name="VALUE" x="233.68" y="114.554" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="SUPPLY2" gate="G$1" x="149.86" y="43.18" smashed="yes">
-<attribute name="VALUE" x="149.86" y="45.974" size="1.778" layer="96" align="bottom-center"/>
-</instance>
-<instance part="SUPPLY1" gate="G$1" x="210.82" y="38.1" smashed="yes">
-<attribute name="VALUE" x="210.82" y="40.894" size="1.778" layer="96" align="bottom-center"/>
-</instance>
-<instance part="C16" gate="G$1" x="210.82" y="30.48" smashed="yes">
-<attribute name="NAME" x="209.042" y="27.94" size="1.27" layer="95" rot="R90"/>
-<attribute name="VALUE" x="213.868" y="27.94" size="1.27" layer="96" rot="R90"/>
-</instance>
 <instance part="C33" gate="G$1" x="233.68" y="101.6" smashed="yes">
 <attribute name="NAME" x="231.902" y="99.06" size="1.27" layer="95" rot="R90"/>
 <attribute name="VALUE" x="236.728" y="99.06" size="1.27" layer="96" rot="R90"/>
-</instance>
-<instance part="C32" gate="G$1" x="218.44" y="30.48" smashed="yes">
-<attribute name="NAME" x="216.916" y="27.94" size="1.27" layer="95" rot="R90"/>
-<attribute name="VALUE" x="220.98" y="27.94" size="1.27" layer="96" rot="R90"/>
-</instance>
-<instance part="GND63" gate="1" x="218.44" y="22.86" smashed="yes">
-<attribute name="VALUE" x="218.44" y="22.606" size="1.778" layer="96" align="top-center"/>
 </instance>
 <instance part="SUPPLY55" gate="G$1" x="142.24" y="177.8" smashed="yes">
 <attribute name="VALUE" x="142.24" y="180.594" size="1.778" layer="96" align="bottom-center"/>
@@ -11175,26 +11093,6 @@ DS pag. 5</text>
 <pinref part="U$7" gate="G$1" pin="-VO"/>
 </segment>
 <segment>
-<wire x1="149.86" y1="33.02" x2="149.86" y2="25.4" width="0.1524" layer="91"/>
-<pinref part="C15" gate="G$1" pin="P$2"/>
-<pinref part="GND2" gate="1" pin="GND"/>
-</segment>
-<segment>
-<wire x1="162.56" y1="33.02" x2="157.48" y2="33.02" width="0.1524" layer="91"/>
-<wire x1="157.48" y1="33.02" x2="157.48" y2="25.4" width="0.1524" layer="91"/>
-<wire x1="162.56" y1="35.56" x2="157.48" y2="35.56" width="0.1524" layer="91"/>
-<wire x1="157.48" y1="35.56" x2="157.48" y2="33.02" width="0.1524" layer="91"/>
-<junction x="157.48" y="33.02"/>
-<pinref part="U3" gate="G$1" pin="GND_(TAB)"/>
-<pinref part="U3" gate="G$1" pin="GND_(TAB)_2"/>
-<pinref part="GND3" gate="1" pin="GND"/>
-</segment>
-<segment>
-<wire x1="210.82" y1="25.4" x2="210.82" y2="27.94" width="0.1524" layer="91"/>
-<pinref part="GND4" gate="1" pin="GND"/>
-<pinref part="C16" gate="G$1" pin="CA"/>
-</segment>
-<segment>
 <wire x1="142.24" y1="78.74" x2="142.24" y2="99.06" width="0.1524" layer="91"/>
 <pinref part="C30" gate="G$1" pin="P$2"/>
 <pinref part="GND56" gate="1" pin="GND"/>
@@ -11241,11 +11139,6 @@ DS pag. 5</text>
 <wire x1="233.68" y1="99.06" x2="233.68" y2="78.74" width="0.1524" layer="91"/>
 <pinref part="GND62" gate="1" pin="GND"/>
 <pinref part="C33" gate="G$1" pin="CA"/>
-</segment>
-<segment>
-<wire x1="218.44" y1="27.94" x2="218.44" y2="25.4" width="0.1524" layer="91"/>
-<pinref part="C32" gate="G$1" pin="P$2"/>
-<pinref part="GND63" gate="1" pin="GND"/>
 </segment>
 <segment>
 <wire x1="142.24" y1="144.78" x2="142.24" y2="165.1" width="0.1524" layer="91"/>
@@ -11447,29 +11340,6 @@ DS pag. 5</text>
 <pinref part="R78" gate="G$1" pin="P$2"/>
 <wire x1="243.84" y1="106.68" x2="243.84" y2="109.22" width="0.1524" layer="91"/>
 <wire x1="243.84" y1="109.22" x2="233.68" y2="109.22" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<wire x1="162.56" y1="40.64" x2="149.86" y2="40.64" width="0.1524" layer="91"/>
-<wire x1="149.86" y1="40.64" x2="149.86" y2="43.18" width="0.1524" layer="91"/>
-<wire x1="149.86" y1="38.1" x2="149.86" y2="40.64" width="0.1524" layer="91"/>
-<junction x="149.86" y="40.64"/>
-<pinref part="C15" gate="G$1" pin="P$1"/>
-<pinref part="U3" gate="G$1" pin="VIN"/>
-<pinref part="SUPPLY2" gate="G$1" pin="3.6V"/>
-</segment>
-</net>
-<net name="2.8V" class="0">
-<segment>
-<wire x1="210.82" y1="33.02" x2="210.82" y2="35.56" width="0.1524" layer="91"/>
-<wire x1="210.82" y1="35.56" x2="210.82" y2="38.1" width="0.1524" layer="91"/>
-<wire x1="208.28" y1="35.56" x2="210.82" y2="35.56" width="0.1524" layer="91"/>
-<junction x="210.82" y="35.56"/>
-<pinref part="U3" gate="G$1" pin="VOUT"/>
-<pinref part="SUPPLY1" gate="G$1" pin="2.8V"/>
-<pinref part="C16" gate="G$1" pin="AN"/>
-<wire x1="210.82" y1="35.56" x2="218.44" y2="35.56" width="0.1524" layer="91"/>
-<pinref part="C32" gate="G$1" pin="P$1"/>
-<wire x1="218.44" y1="35.56" x2="218.44" y2="33.02" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$45" class="0">

@@ -1,22 +1,12 @@
 #include "pn532.h"
 
-#define STATUS_READ     2
-#define DATA_WRITE      1
-#define DATA_READ       3
-
-uint8_t pn532_reset()
-{
-    PERI_REG_BIT_CLEAR(&(GPIO->P[4].DOUT)) = BIT(13);
-    delay_ms(100);
-    PERI_REG_BIT_SET(&(GPIO->P[4].DOUT)) = BIT(13);
-    delay_ms(100);
-}
+static uint8_t ubPn532Command = 0;
 
 uint8_t pn532_init()
 {
-    pn532_reset();
-
-    PERI_REG_BIT_SET(&(GPIO->P[0].DOUT)) = BIT(2);
+    PN532_RESET();
+    delay_ms(10);
+    PN532_UNRESET();
     delay_ms(100);
 
     return 1;
@@ -24,29 +14,52 @@ uint8_t pn532_init()
 
 void pn532_wakeup()
 {
-    PERI_REG_BIT_CLEAR(&(GPIO->P[0].DOUT)) = BIT(2);
+    PN532_SELECT();
     delay_ms(2);
-    PERI_REG_BIT_SET(&(GPIO->P[0].DOUT)) = BIT(2);
+    PN532_UNSELECT();
 }
 
+uint32_t pn532_getVersion()
+{
+    uint8_t ubCmd = PN532_COMMAND_GETFIRMWAREVERSION;
+    if(pn532_writeCommand(&ubCmd, 1, NULL, 0))
+        return 0;
 
+    uint8_t pn532_packetbuffer[4];
+    if(pn532_readResponse(pn532_packetbuffer, sizeof(pn532_packetbuffer), 100) < 0)
+        return 0;
+    
+
+    uint32_t ulVersion = 0;
+
+    ulVersion = pn532_packetbuffer[0];
+    ulVersion <<= 8;
+    ulVersion |= pn532_packetbuffer[1];
+    ulVersion <<= 8;
+    ulVersion |= pn532_packetbuffer[2];
+    ulVersion <<= 8;
+    ulVersion |= pn532_packetbuffer[3];
+
+    return ulVersion;
+}
 
 int8_t pn532_writeCommand(const uint8_t *header, uint8_t hlen, const uint8_t *body, uint8_t blen)
 {
-    command = header[0];
-    writeFrame(header, hlen, body, blen);
+    ubPn532Command = header[0];
+    pn532_writeFrame(header, hlen, body, blen);
     
-    uint8_t timeout = PN532_ACK_WAIT_TIME;
-    while (!isReady()) {
-        delay(1);
-        timeout--;
-        if (0 == timeout) {
-            DMSG("Time out when waiting for ACK\n");
-            return -2;
+    uint32_t ullTimeoutStart = g_ullSystemTick;
+    while(!pn532_ready()) 
+    {
+        if(g_ullSystemTick > (ullTimeoutStart + PN532_ACK_WAIT_TIME)) 
+        {
+            DBGPRINTLN_CTX("Time out when waiting for ACK");
+            return PN532_TIMEOUT;
         }
     }
-    if (readAckFrame()) {
-        DMSG("Invalid ACK\n");
+    if(pn532_readAckFrame()) 
+    {
+        DBGPRINTLN_CTX("Invalid ACK");
         return PN532_INVALID_ACK;
     }
     return 0;
@@ -54,132 +67,135 @@ int8_t pn532_writeCommand(const uint8_t *header, uint8_t hlen, const uint8_t *bo
 
 int16_t pn532_readResponse(uint8_t buf[], uint8_t len, uint16_t timeout)
 {
-    uint16_t time = 0;
-    while (!isReady()) {
-        delay(1);
-        time++;
-        if (timeout > 0 && time > timeout) {
+    uint32_t ullTimeoutStart = g_ullSystemTick;
+    while (!pn532_ready()) 
+    {
+        if(g_ullSystemTick > (ullTimeoutStart + timeout))
             return PN532_TIMEOUT;
-        }
     }
 
-    digitalWrite(_ss, LOW);
-    delay(1);
+    PN532_SELECT();
+    delay_ms(2);
 
-    int16_t result;
+    int16_t sResult;
     do {
-        write(DATA_READ);
+        usart0_spi_transfer_byte(PN532_DATA_READ);
 
-        if (0x00 != read()      ||       // PREAMBLE
-                0x00 != read()  ||       // STARTCODE1
-                0xFF != read()           // STARTCODE2
-           ) {
-
-            result = PN532_INVALID_FRAME;
+        if( usart0_spi_transfer_byte(0x00) != 0x00  ||       // PREAMBLE
+            usart0_spi_transfer_byte(0x00) != 0x00  ||       // STARTCODE1
+            usart0_spi_transfer_byte(0x00) != 0xFF  )        // STARTCODE2
+        {
+            sResult = PN532_INVALID_FRAME;
             break;
         }
 
-        uint8_t length = read();
-        if (0 != (uint8_t)(length + read())) {   // checksum of length
-            result = PN532_INVALID_FRAME;
+        uint8_t ubLength = usart0_spi_transfer_byte(0x00);
+        if ((uint8_t)(ubLength + usart0_spi_transfer_byte(0x00)) != 0x00) // checksum of length
+        {   
+            sResult = PN532_INVALID_FRAME;
             break;
         }
 
-        uint8_t cmd = command + 1;               // response command
-        if (PN532_PN532TOHOST != read() || (cmd) != read()) {
-            result = PN532_INVALID_FRAME;
+        uint8_t ubCmd = ubPn532Command + 1;               // response command
+        if (usart0_spi_transfer_byte(0x00) != PN532_PN532TOHOST || usart0_spi_transfer_byte(0x00) != (ubCmd)) 
+        {
+            sResult = PN532_INVALID_FRAME;
             break;
         }
 
-        DMSG("read:  ");
-        DMSG_HEX(cmd);
+        DBGPRINTLN_CTX("read: 0x%02X", ubCmd);
 
-        length -= 2;
-        if (length > len) {
-            for (uint8_t i = 0; i < length; i++) {
-                DMSG_HEX(read());                 // dump message
+        ubLength -= 2;
+        if(ubLength > len) 
+        {
+            for(uint8_t i = 0; i < ubLength; i++) 
+            {
+                DBGPRINTLN_CTX("0x%02X", usart0_spi_transfer_byte(0x00));    // dump message
             }
-            DMSG("\nNot enough space\n");
-            read();
-            read();
-            result = PN532_NO_SPACE;  // not enough space
+            DBGPRINTLN_CTX("Not enough space");
+            usart0_spi_transfer_byte(0x00);
+            usart0_spi_transfer_byte(0x00);
+
+            sResult = PN532_NO_SPACE;  // not enough space
             break;
         }
 
-        uint8_t sum = PN532_PN532TOHOST + cmd;
-        for (uint8_t i = 0; i < length; i++) {
-            buf[i] = read();
-            sum += buf[i];
+        uint8_t ubSum = PN532_PN532TOHOST + ubCmd;
+        for(uint8_t i = 0; i < ubLength; i++) 
+        {
+            buf[i] = usart0_spi_transfer_byte(0x00);
+            ubSum += buf[i];
 
-            DMSG_HEX(buf[i]);
+            DBGPRINTLN_CTX("0x%02X", buf[i]);
         }
-        DMSG('\n');
 
-        uint8_t checksum = read();
-        if (0 != (uint8_t)(sum + checksum)) {
-            DMSG("checksum is not ok\n");
-            result = PN532_INVALID_FRAME;
+        uint8_t ubChecksum = usart0_spi_transfer_byte(0x00);
+        if ((uint8_t)(ubSum + ubChecksum) != 0x00) {
+            DBGPRINTLN_CTX("checksum nok");
+            sResult = PN532_INVALID_FRAME;
             break;
         }
-        read();         // POSTAMBLE
+        usart0_spi_transfer_byte(0x00);         // POSTAMBLE
 
-        result = length;
+        sResult = ubLength;
     } while (0);
 
-    digitalWrite(_ss, HIGH);
+    PN532_UNSELECT();
 
-    return result;
+    return sResult;
 }
 
-uint8_t pn532_isReady()
+uint8_t pn532_ready()
 {
-    digitalWrite(_ss, LOW);
+    PN532_SELECT();
 
-    write(STATUS_READ);
-    uint8_t status = read() & 1;
-    digitalWrite(_ss, HIGH);
-    return status;
+    usart0_spi_transfer_byte(PN532_STATUS_READ);
+    uint8_t ubStatus = usart0_spi_transfer_byte(0x00) & 1;
+
+    PN532_UNSELECT();
+
+    return ubStatus;
 }
 
 void pn532_writeFrame(const uint8_t *header, uint8_t hlen, const uint8_t *body, uint8_t blen)
 {
-    digitalWrite(_ss, LOW);
-    delay(2);               // wake up PN532
+    PN532_SELECT(); // wake up PN532
+    delay_ms(2);
 
-    write(DATA_WRITE);
-    write(PN532_PREAMBLE);
-    write(PN532_STARTCODE1);
-    write(PN532_STARTCODE2);
+    usart0_spi_transfer_byte(PN532_DATA_WRITE);
+    usart0_spi_transfer_byte(PN532_PREAMBLE);
+    usart0_spi_transfer_byte(PN532_STARTCODE1);
+    usart0_spi_transfer_byte(PN532_STARTCODE2);
 
-    uint8_t length = hlen + blen + 1;   // length of data field: TFI + DATA
-    write(length);
-    write(~length + 1);         // checksum of length
+    uint8_t ubLength = hlen + blen + 1;   // length of data field: TFI + DATA
 
-    write(PN532_HOSTTOPN532);
-    uint8_t sum = PN532_HOSTTOPN532;    // sum of TFI + DATA
+    usart0_spi_transfer_byte(ubLength);
+    usart0_spi_transfer_byte(~ubLength + 1);         // checksum of length
 
-    DMSG("write: ");
+    usart0_spi_transfer_byte(PN532_HOSTTOPN532);
+
+    uint8_t ubSum = PN532_HOSTTOPN532;    // sum of TFI + DATA
+
+    DBGPRINTLN_CTX("write: ");
 
     for (uint8_t i = 0; i < hlen; i++) {
-        write(header[i]);
-        sum += header[i];
+        usart0_spi_transfer_byte(header[i]);
+        ubSum += header[i];
 
-        DMSG_HEX(header[i]);
+        DBGPRINTLN_CTX("0x%02X", header[i]);
     }
     for (uint8_t i = 0; i < blen; i++) {
-        write(body[i]);
-        sum += body[i];
+        usart0_spi_transfer_byte(body[i]);
+        ubSum += body[i];
 
-        DMSG_HEX(body[i]);
+        DBGPRINTLN_CTX("0x%02X", body[i]);
     }
 
-    uint8_t checksum = ~sum + 1;        // checksum of TFI + DATA
-    write(checksum);
-    write(PN532_POSTAMBLE);
+    uint8_t ubChecksum = ~ubSum + 1;        // checksum of TFI + DATA
+    usart0_spi_transfer_byte(ubChecksum);
+    usart0_spi_transfer_byte(PN532_POSTAMBLE);
 
-    digitalWrite(_ss, HIGH);
-
-    DMSG('\n');
+    PN532_UNSELECT(); 
 }
 
 int8_t pn532_readAckFrame()
@@ -188,23 +204,17 @@ int8_t pn532_readAckFrame()
 
     uint8_t ackBuf[sizeof(PN532_ACK)];
 
-    digitalWrite(_ss, LOW);
-    delay(1);
-    write(DATA_READ);
+    PN532_SELECT();
+    delay_ms(2);
 
-    for (uint8_t i = 0; i < sizeof(PN532_ACK); i++) {
-        ackBuf[i] = read();
+    usart0_spi_transfer_byte(PN532_DATA_READ);
+
+    for (uint8_t i = 0; i < sizeof(PN532_ACK); i++) 
+    {
+        ackBuf[i] = usart0_spi_transfer_byte(0x00);
     }
 
-    digitalWrite(_ss, HIGH);
+    PN532_UNSELECT();
 
     return memcmp(ackBuf, PN532_ACK, sizeof(PN532_ACK));
 }
-
-inline void write(uint8_t data) {
-    _spi->transfer(data);
-};
-
-inline uint8_t read() {
-    return _spi->transfer(0);
-}; 
