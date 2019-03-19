@@ -19,7 +19,7 @@
 #include "i2c.h"
 #include "usart.h"
 #include "mcp9600.h"
-#include "pn532.h"
+//#include "pn532.h"
 #include "pid.h"
 #include "pac_lookup.h"
 
@@ -348,16 +348,16 @@ int init()
         DBGPRINTLN_CTX("Oven PID init NOK!");
 
 
-    if(pn532_init())
-        DBGPRINTLN_CTX("PN532 init OK!");
-    else
-        DBGPRINTLN_CTX("PN532 init NOK!");
+    //if(pn532_init())
+    //    DBGPRINTLN_CTX("PN532 init OK!");
+    //else
+    //    DBGPRINTLN_CTX("PN532 init NOK!");
 
     return 0;
 }
 int main()
 {
-    DBGPRINTLN_CTX("PN532 ID 0x%08X", pn532_getVersion());
+    //DBGPRINTLN_CTX("PN532 ID 0x%08X", pn532_getVersion());
 
     DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));
 
