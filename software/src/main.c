@@ -60,7 +60,7 @@ void _wtimer0_isr()
     uint32_t ulFlags = WTIMER0->IFC;
 
     if(ulFlags & WTIMER_IF_OF)
-    {  
+    {
         WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - CLAMP(g_usPacLookup[(uint16_t)pOvenPID->fOutput], MIN_PHASE_ANGLE, MAX_PHASE_ANGLE)) / 0.028f;
         WTIMER1->CC[2].CCV = WTIMER1->CC[1].CCV + ((float)SSR_LATCH_OFFSET / 0.028f);
     }
@@ -484,8 +484,7 @@ int main()
 //            ullLastInput = g_ullSystemTick;
 //        }
 
-        //if(g_ullSystemTick > (ullLastTempCheck + 10))
-        if(0)
+        if(g_ullSystemTick > (ullLastTempCheck + 10))
         {
             uint8_t ubStatus = mcp9600_get_status(0);
 
@@ -518,8 +517,7 @@ int main()
             ullLastTempCheck = g_ullSystemTick;
         }
 
-        //if(g_ullSystemTick > (ullLastStateUpdate + 500))
-        if(0)
+        if(g_ullSystemTick > (ullLastStateUpdate + 500))
         {
             static uint64_t ullTimer = 0;
             static uint8_t ubState = 0;
@@ -529,9 +527,9 @@ int main()
                 case 0:     // preheat
                     DBGPRINTLN_CTX("State - preheat");
                     DBGPRINTLN_CTX("State - progress - %.3f C / 160 C", fTemp);
-                    pOvenPID->fSetpoint = 160;
-                    if(fTemp > 160) 
-                    {                        
+                    pOvenPID->fSetpoint = 145;
+                    if(fTemp > 145)
+                    {
                         ubState = 1;
                         ullTimer = g_ullSystemTick;
                     }
@@ -539,22 +537,22 @@ int main()
 
                 case 1:     // soak
                     DBGPRINTLN_CTX("State - soak");
-                    DBGPRINTLN_CTX("State - progress - %lu ms left", (ullTimer + 90000) - g_ullSystemTick);
-                    pOvenPID->fSetpoint = 180;
-                    if(g_ullSystemTick > (ullTimer + 90000)) 
+                    DBGPRINTLN_CTX("State - progress - %lu ms left", (ullTimer + 70000) - g_ullSystemTick);
+                    pOvenPID->fSetpoint = 160;
+                    if(g_ullSystemTick > (ullTimer + 70000))
                     {
                         ubState = 2;
                         ullTimer = g_ullSystemTick;
                     }
-                    
+
                     break;
-            
+
                 case 2:     // reflow
                     DBGPRINTLN_CTX("State - reflow");
-                    DBGPRINTLN_CTX("State - progress - %.3f C / 240 C", fTemp);
+                    DBGPRINTLN_CTX("State - progress - %.3f C / 220 C", fTemp);
                     pOvenPID->fSetpoint = 240;
-                    if(fTemp > 220) 
-                    {                        
+                    if(fTemp > 220)
+                    {
                         ubState = 3;
                         ullTimer = g_ullSystemTick;
                     }
@@ -564,7 +562,7 @@ int main()
                     DBGPRINTLN_CTX("State - cool");
                     pOvenPID->fSetpoint = 0;
                     break;
-                    
+
                 default:
                     DBGPRINTLN_CTX("State - default");
                     pOvenPID->fSetpoint = 0;
