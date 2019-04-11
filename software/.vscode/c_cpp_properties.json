@@ -445,7 +445,7 @@
                 "BUILD_VERSION",
                 "EFM32GG11B820F2048GQ100"
             ],
-            "compilerPath": "arm-none-eabi-gcc.exe -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16",
+            "compilerPath": "D:/Program Files (x86)/GNU Tools ARM Embedded/8 2018-q4-major/bin/arm-none-eabi-gcc.exe -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16",
             "cStandard": "c99",
             "cppStandard": "c++11",
             "intelliSenseMode": "clang-x64"
@@ -459,8 +459,8 @@
                 "/opt/gcc-arm-none-eabi/arm-none-eabi/include",
                 "/opt/gcc-arm-none-eabi/arm-none-eabi/include/c++/8.2.1",
                 "/opt/gcc-arm-none-eabi/arm-none-eabi/include/c++/8.2.1/backward",
-                "/opt/arm-cmsis/ARM.CMSIS.5.4.0/CMSIS/Include",
-                "/opt/arm-cmsis/SiliconLabs.EFM32GG11B_DFP.5.7.0/Device/SiliconLabs/EFM32GG11B/Include"
+                "${env:ARM_LIBROOT}/ARM.CMSIS.5.4.0/CMSIS/Include",
+                "${env:ARM_LIBROOT}/SiliconLabs.EFM32GG11B_DFP.5.7.0/Device/SiliconLabs/EFM32GG11B/Include"
             ],
             "defines": [
                 "__ACCUM_EPSILON__=0x1P-15K",
@@ -895,7 +895,7 @@
                 "BUILD_VERSION",
                 "EFM32GG11B820F2048GQ100"
             ],
-            "compilerPath": "arm-none-eabi-gcc -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16",
+            "compilerPath": "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-gcc -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16",
             "cStandard": "c99",
             "cppStandard": "c++11",
             "intelliSenseMode": "clang-x64"
