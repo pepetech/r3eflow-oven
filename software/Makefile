@@ -146,7 +146,7 @@ version:
 
 mem-usage: $(TARGET).elf
 	@echo ---------------------------------------------------------------------------
-	@armmem -l $(LDSCRIPT) -d $<
+	@armmem -l $(LDSCRIPT) -d -h $<
 
 make-dir:
 	@mkdir -p $(OBJECTDIRSTRUCT)
