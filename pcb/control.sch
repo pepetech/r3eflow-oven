@@ -8086,11 +8086,11 @@ Source: http://www.bourns.com/data/global/PDFs/MFMSMF.pdf</description>
 <instance part="SUPPLY25" gate="G$1" x="462.28" y="-53.34" smashed="yes">
 <attribute name="VALUE" x="462.28" y="-50.546" size="1.778" layer="96" align="bottom-center"/>
 </instance>
-<instance part="J8" gate=".1" x="612.14" y="-66.04" smashed="yes">
-<attribute name="NAME" x="614.68" y="-66.802" size="1.524" layer="95"/>
-</instance>
-<instance part="J8" gate=".2" x="612.14" y="-78.74" smashed="yes">
+<instance part="J8" gate=".1" x="612.14" y="-78.74" smashed="yes">
 <attribute name="NAME" x="614.68" y="-79.502" size="1.524" layer="95"/>
+</instance>
+<instance part="J8" gate=".2" x="612.14" y="-66.04" smashed="yes">
+<attribute name="NAME" x="614.68" y="-66.802" size="1.524" layer="95"/>
 </instance>
 <instance part="J9" gate=".1" x="612.14" y="-71.12" smashed="yes">
 <attribute name="NAME" x="614.68" y="-71.882" size="1.524" layer="95"/>
@@ -9086,12 +9086,12 @@ Source: http://www.bourns.com/data/global/PDFs/MFMSMF.pdf</description>
 <segment>
 <pinref part="J9" gate=".2" pin="S"/>
 <wire x1="609.6" y1="-76.2" x2="607.06" y2="-76.2" width="0.1524" layer="91"/>
-<pinref part="J8" gate=".2" pin="S"/>
-<wire x1="609.6" y1="-78.74" x2="607.06" y2="-78.74" width="0.1524" layer="91"/>
-<wire x1="607.06" y1="-78.74" x2="607.06" y2="-81.28" width="0.1524" layer="91"/>
 <wire x1="607.06" y1="-76.2" x2="607.06" y2="-78.74" width="0.1524" layer="91"/>
-<junction x="607.06" y="-78.74"/>
 <pinref part="GND41" gate="1" pin="GND"/>
+<pinref part="J8" gate=".1" pin="S"/>
+<wire x1="607.06" y1="-78.74" x2="607.06" y2="-81.28" width="0.1524" layer="91"/>
+<wire x1="609.6" y1="-78.74" x2="607.06" y2="-78.74" width="0.1524" layer="91"/>
+<junction x="607.06" y="-78.74"/>
 </segment>
 <segment>
 <pinref part="D3" gate="G$1" pin="A"/>
@@ -9649,11 +9649,11 @@ Source: http://www.bourns.com/data/global/PDFs/MFMSMF.pdf</description>
 </segment>
 <segment>
 <label x="604.52" y="-66.04" size="0.889" layer="95" rot="R180" xref="yes"/>
-<wire x1="609.6" y1="-66.04" x2="607.06" y2="-66.04" width="0.1524" layer="91"/>
-<pinref part="J8" gate=".1" pin="S"/>
 <pinref part="R28" gate="G$1" pin="P$1"/>
 <wire x1="607.06" y1="-66.04" x2="604.52" y2="-66.04" width="0.1524" layer="91"/>
 <wire x1="607.06" y1="-63.5" x2="607.06" y2="-66.04" width="0.1524" layer="91"/>
+<pinref part="J8" gate=".2" pin="S"/>
+<wire x1="609.6" y1="-66.04" x2="607.06" y2="-66.04" width="0.1524" layer="91"/>
 <junction x="607.06" y="-66.04"/>
 </segment>
 </net>
