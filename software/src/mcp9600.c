@@ -7,14 +7,14 @@ static uint8_t mcp9600_read_register(uint8_t ubAddr, uint8_t ubReg)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        i2c1_write_byte(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubReg, I2C_STOP);
+        i2c0_write_byte(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubReg, I2C_STOP);
     //}
 
     //delay_ms(1);
 
     //ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     //{
-        ubVal = i2c1_read_byte(MCP9600_I2C_ADDR | (ubAddr & 0x07), I2C_STOP);
+        ubVal = i2c0_read_byte(MCP9600_I2C_ADDR | (ubAddr & 0x07), I2C_STOP);
     }
 
     //delay_ms(1);
@@ -27,14 +27,14 @@ static uint16_t mcp9600_read_register16(uint8_t ubAddr, uint8_t ubReg)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        i2c1_write_byte(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubReg, I2C_STOP);
+        i2c0_write_byte(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubReg, I2C_STOP);
     //}
 
     //delay_ms(1);
 
     //ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     //{
-        i2c1_read(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubBuf, 2, I2C_STOP);
+        i2c0_read(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubBuf, 2, I2C_STOP);
     }
 
     //delay_ms(1);
@@ -47,14 +47,14 @@ static uint32_t mcp9600_read_register24(uint8_t ubAddr, uint8_t ubReg)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        i2c1_write_byte(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubReg, I2C_STOP);
+        i2c0_write_byte(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubReg, I2C_STOP);
     //}
 
     //delay_ms(1);
 
     //ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     //{
-        i2c1_read(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubBuf, 3, I2C_STOP);
+        i2c0_read(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubBuf, 3, I2C_STOP);
     }
 
     //delay_ms(1);
@@ -70,7 +70,7 @@ static void mcp9600_write_register(uint8_t ubAddr, uint8_t ubReg, uint8_t ubVal)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        i2c1_write(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubBuf, 2, I2C_STOP);
+        i2c0_write(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubBuf, 2, I2C_STOP);
     }
 
     //delay_ms(1);
@@ -85,7 +85,7 @@ static void mcp9600_write_register16(uint8_t ubAddr, uint8_t ubReg, uint16_t usV
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        i2c1_write(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubBuf, 3, I2C_STOP);
+        i2c0_write(MCP9600_I2C_ADDR | (ubAddr & 0x07), ubBuf, 3, I2C_STOP);
     }
 
     //delay_ms(1);
@@ -97,7 +97,7 @@ uint8_t mcp9600_init(uint8_t ubAddr)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        if(!i2c1_write(MCP9600_I2C_ADDR | (ubAddr & 0x07), 0, 0, I2C_STOP)) // Check ACK from the expected address
+        if(!i2c0_write(MCP9600_I2C_ADDR | (ubAddr & 0x07), 0, 0, I2C_STOP)) // Check ACK from the expected address
             return 0;
     }
 

@@ -1,8 +1,8 @@
 #include "pid.h"
 
-pid_t* pid_init(float fMax, float fMin, float fRange, float fKiCap, float fKp, float fKi, float fKd)
+pid_struct_t* pid_init(float fMax, float fMin, float fRange, float fKiCap, float fKp, float fKi, float fKd)
 {
-    pid_t *pPID = (pid_t *)malloc(sizeof(pid_t));
+    pid_struct_t *pPID = (pid_struct_t *)malloc(sizeof(pid_struct_t));
 
     if(!pPID)
         return NULL;
@@ -24,7 +24,7 @@ pid_t* pid_init(float fMax, float fMin, float fRange, float fKiCap, float fKp, f
     return pPID;
 }
 
-void pid_free(pid_t *pPID)
+void pid_free(pid_struct_t *pPID)
 {
     if(!pPID)
         return;
@@ -32,18 +32,18 @@ void pid_free(pid_t *pPID)
     free(pPID);
 }
 
-void pid_calc(pid_t *pPID)
+void pid_calc(pid_struct_t *pPID)
 {
     if(!pPID)
         return;
 
     if(!pPID->fDeltaTime)
         return;
-    
+
     // Calculate error
     float fError = pPID->fSetpoint - pPID->fValue;
 
-    if(fError < pPID->fRange && fError > -pPID->fRange) 
+    if(fError < pPID->fRange && fError > -pPID->fRange)
     {
         // Proportional term
         float fProportional = pPID->fKp * fError;
@@ -64,7 +64,7 @@ void pid_calc(pid_t *pPID)
         pPID->fOutput = fProportional + fIntegral + fDerivative;
 
         // Clamp
-        pPID->fOutput = CLAMP(pPID->fOutput, pPID->fMin, pPID->fMax);
+        pPID->fOutput = CLIP(pPID->fOutput, pPID->fMin, pPID->fMax);
     }
     else if(fError > pPID->fRange)
     {
@@ -76,7 +76,7 @@ void pid_calc(pid_t *pPID)
         pPID->fOutput = pPID->fMin;
         pPID->fIntegral = 0;
     }
-    
+
     // Save error to differentiate
     pPID->fPreviousError = fError;
 }

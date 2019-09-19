@@ -9717,11 +9717,6 @@ Source: http://www.bourns.com/data/global/PDFs/MFMSMF.pdf</description>
 <label x="703.58" y="58.42" size="0.8128" layer="95" rot="R180" xref="yes"/>
 <pinref part="R17" gate="G$1" pin="P$1"/>
 </segment>
-<segment>
-<wire x1="172.72" y1="193.04" x2="170.18" y2="193.04" width="0.1524" layer="91"/>
-<label x="170.18" y="193.04" size="0.8128" layer="95" rot="R180" xref="yes"/>
-<pinref part="U10" gate="G$1" pin="PA8"/>
-</segment>
 </net>
 <net name="TFT-DC" class="0">
 <segment>
@@ -10522,6 +10517,13 @@ Source: http://www.bourns.com/data/global/PDFs/MFMSMF.pdf</description>
 <wire x1="215.9" y1="160.02" x2="218.44" y2="160.02" width="0.1524" layer="91"/>
 <label x="218.44" y="160.02" size="0.889" layer="95" xref="yes"/>
 <pinref part="U10" gate="G$1" pin="PD4"/>
+</segment>
+</net>
+<net name="TIM0-CC0-BUZZ" class="0">
+<segment>
+<wire x1="172.72" y1="193.04" x2="170.18" y2="193.04" width="0.1524" layer="91"/>
+<label x="170.18" y="193.04" size="0.8128" layer="95" rot="R180" xref="yes"/>
+<pinref part="U10" gate="G$1" pin="PA8"/>
 </segment>
 </net>
 </nets>

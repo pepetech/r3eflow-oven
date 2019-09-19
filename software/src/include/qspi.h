@@ -94,4 +94,4 @@ void qspi_flash_read_security(uint16_t usAddress, uint8_t *pubDst, uint8_t ubCou
 void qspi_flash_write_security(uint16_t usAddress, uint8_t *pubSrc, uint8_t ubCount);
 void qspi_flash_unprotect_all_blocks();
 
-#endif
+#endif  // __QSPI_H__

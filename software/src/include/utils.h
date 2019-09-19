@@ -45,14 +45,18 @@
 #define UINT322BITSTR(b)    UINT162BITSTR(((b) >> 16) & 0xFFFF), UINT162BITSTR(((b) >> 0) & 0xFFFF)
 #define UINT642BITSTR(b)    UINT322BITSTR(((b) >> 32) & 0xFFFFFFFF), UINT322BITSTR(((b) >> 0) & 0xFFFFFFFF)
 
-// Clamping utilities
-#define MIN(x, y)           ((x) < (y) ? (x) : (y))
-#define MAX(x, y)           ((x) > (y) ? (x) : (y))
-#define CLAMP(x, min, max)  MIN(max, MAX(x, min))
+// Sign of, 1 if (+) 0 if (-)
+#define SIGN(a)  (!(a < 0))
 
-// reverse bit order, used in pn532, imported from arduino lib
-#define REVERSE_BITS_ORDER(b)   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4; \
-                                b = (b & 0xCC) >> 2 | (b & 0x33) << 2; \
-                                b = (b & 0xAA) >> 1 | (b & 0x55) << 1
+// Absolute value of
+#define ABS(a)  ((a) < 0 ? (-(a)) : (a))
+
+// Macros that get the lesser/greater of two values
+#define MAX(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
+#define MIN(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+#define CLIP(l,a,h) (MAX(MIN(h,a),l))
+
+// Swap two variables
+#define SWAP(a, b)  do{ typeof(a) SWAP = a; a = b; b = SWAP; }while(0)
 
 #endif  // __UTILS_H__

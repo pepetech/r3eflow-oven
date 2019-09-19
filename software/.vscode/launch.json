@@ -7,17 +7,17 @@
         {
             "name": "Debug",
             "cwd": "${workspaceRoot}",
-            "executable": "./bin/v1.r3eflow.elf",
+            "executable": "./bin/v1.R3FLOW_Firmware.elf",
             "request": "launch",
             "type": "cortex-debug",
             "preLaunchTask": "Build",
             "servertype": "jlink",
-            "device": "EFM32GG11B820F2048",
-            "svdFile": "${env:ARM_LIBROOT}/SiliconLabs.EFM32GG11B_DFP.5.7.0/SVD/EFM32GG11B/EFM32GG11B820F2048GQ100.svd",
+            "device": "EFM32GG11B420F2048",
+            "svdFile": "${env:ARM_LIBROOT}/SiliconLabs.EFM32GG11B_DFP.5.7.0/SVD/EFM32GG11B/EFM32GG11B420F2048GQ100.svd",
             "interface": "swd",
             "swoConfig": {
                 "enabled": true,
-                "swoFrequency": 2000000,
+                "swoFrequency": 6000000,
                 "cpuFrequency": 36000000,
                 "source": "probe",
                 "decoders": [

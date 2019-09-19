@@ -6,6 +6,7 @@
 #include "nvic.h"
 #include "atomic.h"
 #include "systick.h"
+#include "rmu.h"
 #include "emu.h"
 #include "cmu.h"
 #include "gpio.h"
@@ -16,13 +17,16 @@
 #include "trng.h"
 #include "rtcc.h"
 #include "adc.h"
-#include "i2c.h"
+#include "qspi.h"
 #include "usart.h"
+#include "i2c.h"
 #include "mcp9600.h"
-//#include "pn532.h"
 #include "pid.h"
 #include "pac_lookup.h"
+#include "sk9822.h"
+#include "tft.h"
 
+// Defines
 // https://www.silabs.com/documents/public/application-notes/AN0030.pdf
 
 #define ZEROCROSS_DELAY     1300    // us
@@ -40,7 +44,7 @@
 #define PID_KD  10        // PID Derivative gain
 
 // Structs
-static pid_t *pOvenPID = NULL;
+static pid_struct_t *pOvenPID = NULL;
 
 // Forward declarations
 static void reset() __attribute__((noreturn));
@@ -52,7 +56,6 @@ void get_device_name(char *pszDeviceName, uint32_t ulDeviceNameSize);
 static uint16_t get_device_revision();
 
 // Variables
-// static volatile float fPhaseAngle = 0.f;
 
 // ISRs
 void _wtimer0_isr()
@@ -61,7 +64,7 @@ void _wtimer0_isr()
 
     if(ulFlags & WTIMER_IF_OF)
     {
-        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - CLAMP(g_usPacLookup[(uint16_t)pOvenPID->fOutput], MIN_PHASE_ANGLE, MAX_PHASE_ANGLE)) / 0.028f;
+        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - CLIP(g_usPacLookup[(uint16_t)pOvenPID->fOutput], MIN_PHASE_ANGLE, MAX_PHASE_ANGLE)) / 0.028f;
         WTIMER1->CC[2].CCV = WTIMER1->CC[1].CCV + ((float)SSR_LATCH_OFFSET / 0.028f);
     }
 }
@@ -98,21 +101,13 @@ void sleep()
 
 uint32_t get_free_ram()
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-    {
-        extern void *_sbrk(int);
+    void *pCurrentHeap = malloc(1);
 
-        void *pCurrentHeap = _sbrk(1);
+    uint32_t ulFreeRAM = (uint32_t)__get_MSP() - (uint32_t)pCurrentHeap;
 
-        if(!pCurrentHeap)
-            return 0;
+    free(pCurrentHeap);
 
-        uint32_t ulFreeRAM = (uint32_t)__get_MSP() - (uint32_t)pCurrentHeap;
-
-        _sbrk(-1);
-
-        return ulFreeRAM;
-    }
+    return ulFreeRAM;
 }
 
 void get_device_name(char *pszDeviceName, uint32_t ulDeviceNameSize)
@@ -224,10 +219,15 @@ uint16_t get_device_revision()
 
 int init()
 {
-    emu_init(); // Init EMU
+    rmu_init(RMU_CTRL_PINRMODE_FULL, RMU_CTRL_SYSRMODE_EXTENDED, RMU_CTRL_LOCKUPRMODE_EXTENDED, RMU_CTRL_WDOGRMODE_EXTENDED); // Init RMU and set reset modes
 
-    cmu_hfxo_startup_calib(0x200, 0x0FE); // Config HFXO Startup for 1280 uA, 30.036 pF
-    cmu_hfxo_steady_calib(0x00A, 0x0FE); // Config HFXO Steady state for 20.00 uA, 30.036 pF
+    emu_init(1); // Init EMU
+    emu_r5v_vin_config(EMU_R5VCTRL_INPUTMODE_AUTO); // Set 5V regulator automatic input selection
+    emu_r5v_vout_config(3.3f); // Set 5V regulator output voltage to 3.3V
+    //emu_dcdc_init(2500.f, 200.f, 500.f, 0.f); // Init DC-DC converter (2.5 V, 200 mA active, 500 uA sleep, 0 mA reverse limit)
+
+    cmu_hfxo_startup_calib(0x200, 0x087); // Config HFXO Startup for 1280 uA, 20.04 pF
+    cmu_hfxo_steady_calib(0x006, 0x087); // Config HFXO Steady state for 12 uA, 20.04 pF
 
     cmu_init(); // Init Clocks
 
@@ -237,15 +237,20 @@ int init()
     cmu_update_clocks(); // Update Clocks
 
     dbg_init(); // Init Debug module
-    dbg_swo_config(BIT(0) | BIT(1), 2000000); // Init SWO channels 0 and 1 at 2 MHz
+    dbg_swo_config(BIT(0) | BIT(1), 6000000); // Init SWO channels 0 and 1 at 6 MHz
 
     msc_init(); // Init Flash, RAM and caches
 
     systick_init(); // Init system tick
 
     gpio_init(); // Init GPIOs
+    ldma_init(); // Init LDMA
     rtcc_init(); // Init RTCC
+    trng_init(); // Init TRNG
+    crypto_init(); // Init Crypto engine
+    crc_init(); // Init CRC calculation unit
     adc_init(); // Init ADCs
+    qspi_init(); // Init QSPI memory
 
     float fAVDDHighThresh, fAVDDLowThresh;
     float fDVDDHighThresh, fDVDDLowThresh;
@@ -258,8 +263,16 @@ int init()
     fDVDDHighThresh = fDVDDLowThresh + 0.026f; // Hysteresis from datasheet
     fIOVDDHighThresh = fIOVDDLowThresh + 0.026f; // Hysteresis from datasheet
 
-    usart0_init(1000000, 0, USART_SPI_LSB_FIRST, 0, 0, 0);
-    i2c1_init(I2C_NORMAL, 1, 1); // Init I2C1 at 100 kHz on location 1
+    i2c0_init(I2C_NORMAL, 1, 1); // Init I2C0 at 100 kHz on location 1 Temp Sensors
+    i2c1_init(I2C_FAST, 1, 1); // Init I2C1 at 400 kHz on location 1 Touch TFT
+    usart0_init(18000000, 0, USART_SPI_MSB_FIRST, -1, 1, 1); // Init Usart 0 Mode SPI at 1MHz SK9822 LED
+    usart2_init(18000000, 0, USART_SPI_MSB_FIRST, 0, 0, 0); // Init Usart 2 Mode SPI at 36MHz ILI9488 Display
+
+    //usart0_init(115200, UART_FRAME_STOPBITS_ONE | UART_FRAME_PARITY_NONE | USART_FRAME_DATABITS_EIGHT, 4, 4, -1, -1);
+    //usart0_init(1000000, 0, USART_SPI_LSB_FIRST, 0, 0, 0);
+    //usart0_init(800000, 1, USART_SPI_MSB_FIRST, -1, 4, 5);
+    //usart0_init(1000000, 1, USART_SPI_MSB_FIRST, 0, 0, 0);
+    //i2c0_init(I2C_NORMAL, 1, 1); // Init I2C0 at 100 kHz on location 1
 
     char szDeviceName[32];
 
@@ -272,6 +285,11 @@ int init()
     DBGPRINTLN_CTX("RAM Size: %hu kB", SRAM_SIZE >> 10);
     DBGPRINTLN_CTX("Free RAM: %lu B", get_free_ram());
     DBGPRINTLN_CTX("Unique ID: %08X-%08X", DEVINFO->UNIQUEH, DEVINFO->UNIQUEL);
+
+    DBGPRINTLN_CTX("RMU - Reset cause: %hhu", rmu_get_reset_reason());
+    DBGPRINTLN_CTX("RMU - Reset state: %hhu", rmu_get_reset_state());
+
+    rmu_clear_reset_reason();
 
     DBGPRINTLN_CTX("CMU - HFXO Clock: %.1f MHz!", (float)HFXO_VALUE / 1000000);
     DBGPRINTLN_CTX("CMU - HFRCO Clock: %.1f MHz!", (float)HFRCO_VALUE / 1000000);
@@ -324,8 +342,22 @@ int init()
     DBGPRINTLN_CTX("EMU - IOVDD Voltage: %.2f mV", adc_get_iovdd());
     DBGPRINTLN_CTX("EMU - IOVDD Status: %s", g_ubIOVDDLow ? "LOW" : "OK");
     DBGPRINTLN_CTX("EMU - Core Voltage: %.2f mV", adc_get_corevdd());
+    DBGPRINTLN_CTX("EMU - R5V VREGI Voltage: %.2f mV", adc_get_r5v_vregi());
+    DBGPRINTLN_CTX("EMU - R5V VREGI Current: %.2f mA", adc_get_r5v_vregi_current());
+    DBGPRINTLN_CTX("EMU - R5V VBUS Voltage: %.2f mV", adc_get_r5v_vbus());
+    DBGPRINTLN_CTX("EMU - R5V VBUS Current: %.2f mA", adc_get_r5v_vbus_current());
+    DBGPRINTLN_CTX("EMU - R5V VREGO Voltage: %.2f mV", adc_get_r5v_vrego());
 
     delay_ms(100);
+
+
+    DBGPRINTLN_CTX("Scanning I2C bus 0...");
+
+    for(uint8_t a = 0x08; a < 0x78; a++)
+    {
+        if(i2c0_write(a, 0, 0, I2C_STOP))
+            DBGPRINTLN_CTX("  Address 0x%02X ACKed!", a);
+    }
 
     DBGPRINTLN_CTX("Scanning I2C bus 1...");
 
@@ -340,6 +372,11 @@ int init()
     else
         DBGPRINTLN_CTX("MCP9600 #0 init NOK!");
 
+    if(mcp9600_init(7))
+        DBGPRINTLN_CTX("MCP9600 #7 init OK!");
+    else
+        DBGPRINTLN_CTX("MCP9600 #7 init NOK!");
+
     pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_OPERATING_RANGE, PID_KI_CAP, PID_KP, PID_KI, PID_KD);
 
     if(pOvenPID)
@@ -347,20 +384,10 @@ int init()
     else
         DBGPRINTLN_CTX("Oven PID init NOK!");
 
-
-    //if(pn532_init())
-    //    DBGPRINTLN_CTX("PN532 init OK!");
-    //else
-    //    DBGPRINTLN_CTX("PN532 init NOK!");
-
     return 0;
 }
 int main()
 {
-    //DBGPRINTLN_CTX("PN532 ID 0x%08X", pn532_getVersion());
-
-    DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));
-
     // Internal flash test
     //DBGPRINTLN_CTX("Initial calibration dump:");
 
@@ -387,9 +414,121 @@ int main()
     DBGPRINTLN_CTX("0x00100000: %08X", *(volatile uint32_t *)0x00100000);
     */
 
+    // QSPI
+    DBGPRINTLN_CTX("Flash Part ID: %06X", qspi_flash_read_jedec_id());
+
+    uint8_t ubFlashUID[8];
+
+    qspi_flash_read_security(0x0000, ubFlashUID, 8);
+
+    DBGPRINTLN_CTX("Flash ID: %02X%02X%02X%02X%02X%02X%02X%02X", ubFlashUID[0], ubFlashUID[1], ubFlashUID[2], ubFlashUID[3], ubFlashUID[4], ubFlashUID[5], ubFlashUID[6], ubFlashUID[7]);
+
+    //qspi_flash_chip_erase();
+
+    //uint8_t rd[16];
+
+    //qspi_flash_cmd(QSPI_FLASH_CMD_READ_FAST, 0x00008000, 3, 0, 8, NULL, 0, rd, 10);
+    //DBGPRINTLN_CTX("Flash RD C: %02X%02X%02X%02X%02X%02X%02X%02X %02X%02X%02X%02X%02X%02X%02X%02X", rd[0], rd[1], rd[2], rd[3], rd[4], rd[5], rd[6], rd[7], rd[8], rd[9], rd[10], rd[11], rd[12], rd[13], rd[14], rd[15]);
+
+    //DBGPRINTLN_CTX("Flash RD: %08X", *(volatile uint32_t *)0xC0000000);
+    //*(volatile uint32_t *)0xC0000000 = 0xABCDEF12;
+
+    //qspi_flash_cmd(QSPI_FLASH_CMD_READ_FAST, 0x00000000, 3, 0, 8, NULL, 0, rd, 10);
+    //DBGPRINTLN_CTX("Flash RD C: %02X%02X%02X%02X%02X%02X%02X%02X %02X%02X%02X%02X%02X%02X%02X%02X", rd[0], rd[1], rd[2], rd[3], rd[4], rd[5], rd[6], rd[7], rd[8], rd[9], rd[10], rd[11], rd[12], rd[13], rd[14], rd[15]);
+
+    //uint32_t wr = 0xA2B3C4D5;
+    //qspi_flash_busy_wait();
+    //qspi_flash_write_enable();
+    //qspi_flash_cmd(QSPI_FLASH_CMD_WRITE, 0x00000004, 3, 0, 0, (uint8_t*)&wr, 4, NULL, 0);
+    //qspi_flash_busy_wait();
+
+    //qspi_flash_cmd(QSPI_FLASH_CMD_READ_FAST, 0x00000000, 3, 0, 8, NULL, 0, rd, 10);
+    //DBGPRINTLN_CTX("Flash RD C: %02X%02X%02X%02X%02X%02X%02X%02X %02X%02X%02X%02X%02X%02X%02X%02X", rd[0], rd[1], rd[2], rd[3], rd[4], rd[5], rd[6], rd[7], rd[8], rd[9], rd[10], rd[11], rd[12], rd[13], rd[14], rd[15]);
+
+    //*(volatile uint32_t *)0xC0000000 = 0x12AB34CD;
+
+    //////// Test for page wrapping (write beyond page boundary)
+
+    /*
+    for(uint8_t i = 0; i <= 64; i++)
+        *(volatile uint32_t *)(0xC0000000 + i * 4) = 0x0123ABCD;
+
+    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC0000000); // CD
+    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC0000001); // AB
+    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC0000002); // 23
+    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC0000003); // 01
+    DBGPRINTLN_CTX("Flash RD: %08X", *(volatile uint32_t *)0xC0000000); // 0123ABCD
+    DBGPRINTLN_CTX("Flash RD: %08X", *(volatile uint32_t *)0xC0000010); // 0123ABCD
+    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC00000FC); // CD
+    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC00000FD); // AB
+    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC00000FE); // 23
+    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC00000FF); // 01
+    DBGPRINTLN_CTX("Flash RD: %08X", *(volatile uint32_t *)0xC0000100); // 0123ABCD
+    */
+
+    //////// Test for code copy to QSPI flash
+
+    /*
+    for(uint32_t i = 0; i < bin_v1_test_bin_qspi_len / 4; i++)
+        *(volatile uint32_t *)(0x04000000 + i * 4) = *(uint32_t *)(bin_v1_test_bin_qspi + i * 4);
+
+    DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000000);
+    DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000001);
+    DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000002);
+    DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000003);
+
+    DBGPRINTLN_CTX("QSPI Dest %08X", get_family_name);
+    DBGPRINTLN_CTX("Device: %s%hu", get_family_name((DEVINFO->PART & _DEVINFO_PART_DEVICE_FAMILY_MASK) >> _DEVINFO_PART_DEVICE_FAMILY_SHIFT), (DEVINFO->PART & _DEVINFO_PART_DEVICE_NUMBER_MASK) >> _DEVINFO_PART_DEVICE_NUMBER_SHIFT);
+    */
+
+    //DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000000);
+    //DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000001);
+    //DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000002);
+    //DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000003);
+    //DBGPRINTLN_CTX("Boot RD: %02X", *(volatile uint8_t *)0x0FE10000);
+    //DBGPRINTLN_CTX("Data RD: %02X", *(volatile uint8_t *)0x0FE00000);
+
+    //qspi_flash_cmd(QSPI_FLASH_CMD_READ_FAST, 0x00000000, 3, 0, 8, NULL, 0, rd, 10);
+    //DBGPRINTLN_CTX("Flash RD C: %02X%02X%02X%02X%02X%02X%02X%02X %02X%02X%02X%02X%02X%02X%02X%02X", rd[0], rd[1], rd[2], rd[3], rd[4], rd[5], rd[6], rd[7], rd[8], rd[9], rd[10], rd[11], rd[12], rd[13], rd[14], rd[15]);
+
+    //DBGPRINTLN_CTX("QSPI RD: %08X", *(volatile uint32_t *)0xC0000000);
+    //DBGPRINTLN_CTX("QSPI RD: %08X", *(volatile uint32_t *)0xC0000004);
+
+    //for(uint8_t i = 0; i < 112; i++)
+    //{
+    //    usart0_spi_transfer_byte(0xFF); // G
+    //    usart0_spi_transfer_byte(0xFF); // R
+    //    usart0_spi_transfer_byte(0xFF); // B
+    //}
+
+    //delay_ms(1000);
+
+    //for(uint8_t i = 0; i < 112; i++)
+    //{
+    //    usart0_spi_transfer_byte(0x00); // G
+    //    usart0_spi_transfer_byte(0x00); // R
+    //    usart0_spi_transfer_byte(0x00); // B
+    //}
+
+    //delay_ms(1000);
+
+    // LEDs init
+    sk9822_init();
+
+    // tft init
+    tft_bl_init(2000);
+    tft_bl_set(0.5);
+
+    // MCP9600 ID
+    DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));
+    DBGPRINTLN_CTX("MCP9600 #7 ID 0x%02X Revision 0x%02X", mcp9600_get_id(7), mcp9600_get_revision(7));
+
     // MCP9600 init
     mcp9600_set_sensor_config(0, MCP9600_TYPE_K | MCP9600_FILT_COEF_0);
     mcp9600_set_config(0, MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
+
+    mcp9600_set_sensor_config(7, MCP9600_TYPE_K | MCP9600_FILT_COEF_0);
+    mcp9600_set_config(7, MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
 
     // PID initialization
     pOvenPID->fSetpoint = 160.f;
@@ -470,9 +609,20 @@ int main()
 
         float fTemp;
 
-        if(g_ullSystemTick > (ullLastBlink + 500))
+        if(g_ullSystemTick > (ullLastBlink + 50))
         {
-            GPIO->P[0].DOUT ^= BIT(0);
+            static uint8_t ubLastLED = 7;
+
+            sk9822_set_color(ubLastLED, 0x00, 0x00, 0x00, 0x00, 0);
+
+            if(ubLastLED == 7)
+                ubLastLED = 0;
+            else
+                ubLastLED += 1;
+
+            uint32_t ulColor = trng_pop_random();
+
+            sk9822_set_color(ubLastLED, 1, (uint8_t)((ulColor >> 16) & 0xFF), (uint8_t)((ulColor >> 8) & 0xFF), (uint8_t)(ulColor & 0xFF), 1);
 
             ullLastBlink = g_ullSystemTick;
         }

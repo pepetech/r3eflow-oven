@@ -39,4 +39,4 @@ static inline void __iRestore(const uint32_t *__s)
 #define NONATOMIC_RESTORESTATE uint32_t primask_save __attribute__((__cleanup__(__iRestore))) = __get_PRIMASK()
 #define NONATOMIC_FORCEOFF uint32_t primask_save __attribute__((__cleanup__(__iDisableIRQParam))) = 0
 
-#endif // __ATOMIC_H__
+#endif  // __ATOMIC_H__

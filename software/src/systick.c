@@ -8,7 +8,7 @@ void _systick_isr()
 }
 void systick_init()
 {
-    SysTick->LOAD = (HFCORE_CLOCK_FREQ / 1000) - 1; // TODO: Change this
+    SysTick->LOAD = (HFCORE_CLOCK_FREQ / 1000) - 1;
     SysTick->VAL = 0;
     SysTick->CTRL = SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;
 
@@ -16,7 +16,10 @@ void systick_init()
 }
 void delay_ms(uint64_t ullTicks)
 {
-    uint64_t ullStartTick = g_ullSystemTick;
+    NONATOMIC_BLOCK(NONATOMIC_RESTORESTATE)
+    {
+        uint64_t ullStartTick = g_ullSystemTick;
 
-    while(g_ullSystemTick - ullStartTick < ullTicks);
+        while(g_ullSystemTick - ullStartTick < ullTicks);
+    }
 }
