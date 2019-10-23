@@ -8,8 +8,8 @@
 #include "usart.h"
 #include "gpio.h"
 
-#define ILI9488_TFTWIDTH        320U
-#define ILI9488_TFTHEIGHT       480U
+#define ILI9488_TFTWIDTH        480U
+#define ILI9488_TFTHEIGHT       320U
 
 #define ILI9488_NOP             0x00 // NOP
 #define ILI9488_SW_RESET        0x01 // Soft Reset

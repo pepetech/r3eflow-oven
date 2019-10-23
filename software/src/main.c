@@ -24,12 +24,14 @@
 #include "pid.h"
 #include "pac_lookup.h"
 #include "sk9822.h"
-#include "tft.h"
+#include "ili9488.h"
+#include "ft6x36.h"
+#include "lvgl.h"
 
 // Defines
 // https://www.silabs.com/documents/public/application-notes/AN0030.pdf
 
-#define ZEROCROSS_DELAY     1300    // us
+#define ZEROCROSS_DELAY     10    // us
 #define SSR_LATCH_OFFSET    10       // us
 #define ZEROCROSS_DEADTIME  300     // us
 
@@ -55,7 +57,25 @@ static uint32_t get_free_ram();
 void get_device_name(char *pszDeviceName, uint32_t ulDeviceNameSize);
 static uint16_t get_device_revision();
 
+//lv forwards
+void lv_port_disp_init(void);
+void lv_port_indev_init(void);
+
+void disp_bl_init(uint32_t ulFrequency);
+void disp_bl_set(float fBrightness);
+
+static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
+
+static void touchpad_init(void);
+static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
+
+static void btn_event_cb(lv_obj_t * btn, lv_event_t event);
+static void ddlist_event_cb(lv_obj_t * ddlist, lv_event_t event);
+
 // Variables
+lv_indev_t * indev_touchpad;
+
+static lv_obj_t * slider;
 
 // ISRs
 void _wtimer0_isr()
@@ -264,9 +284,9 @@ int init()
     fIOVDDHighThresh = fIOVDDLowThresh + 0.026f; // Hysteresis from datasheet
 
     i2c0_init(I2C_NORMAL, 1, 1); // Init I2C0 at 100 kHz on location 1 Temp Sensors
-    i2c1_init(I2C_FAST, 1, 1); // Init I2C1 at 400 kHz on location 1 Touch TFT
+    i2c1_init(I2C_NORMAL, 1, 1); // Init I2C1 at 400 kHz on location 1 Touch TFT
     usart0_init(18000000, 0, USART_SPI_MSB_FIRST, -1, 1, 1); // Init Usart 0 Mode SPI at 1MHz SK9822 LED
-    usart2_init(18000000, 0, USART_SPI_MSB_FIRST, 0, 0, 0); // Init Usart 2 Mode SPI at 36MHz ILI9488 Display
+    usart2_init(36000000, 0, USART_SPI_MSB_FIRST, 0, 0, 0); // Init Usart 2 Mode SPI at 36MHz ILI9488 Display
 
     //usart0_init(115200, UART_FRAME_STOPBITS_ONE | UART_FRAME_PARITY_NONE | USART_FRAME_DATABITS_EIGHT, 4, 4, -1, -1);
     //usart0_init(1000000, 0, USART_SPI_LSB_FIRST, 0, 0, 0);
@@ -348,6 +368,7 @@ int init()
     DBGPRINTLN_CTX("EMU - R5V VBUS Current: %.2f mA", adc_get_r5v_vbus_current());
     DBGPRINTLN_CTX("EMU - R5V VREGO Voltage: %.2f mV", adc_get_r5v_vrego());
 
+    play_sound(1500, 500);
     delay_ms(100);
 
 
@@ -377,6 +398,16 @@ int init()
     else
         DBGPRINTLN_CTX("MCP9600 #7 init NOK!");
 
+    if(ili9488_init())
+        DBGPRINTLN_CTX("ILI9488 init OK!");
+    else
+        DBGPRINTLN_CTX("ILI9488 init NOK!");
+
+    if(ft6x36_init())
+        DBGPRINTLN_CTX("FT6236 init OK!");
+    else
+        DBGPRINTLN_CTX("FT6236 init NOK!");
+
     pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_OPERATING_RANGE, PID_KI_CAP, PID_KP, PID_KI, PID_KD);
 
     if(pOvenPID)
@@ -388,6 +419,10 @@ int init()
 }
 int main()
 {
+    play_sound(2000, 100);
+    delay_ms(50);
+    play_sound(2000, 100);
+
     // Internal flash test
     //DBGPRINTLN_CTX("Initial calibration dump:");
 
@@ -514,10 +549,12 @@ int main()
 
     // LEDs init
     sk9822_init();
+    DBGPRINTLN_CTX("SK9822 LEDs Init!");
 
-    // tft init
-    tft_bl_init(2000);
-    tft_bl_set(0.5);
+    // tft + LvGL init
+    lv_init();
+    lv_port_disp_init();
+    lv_port_indev_init();
 
     // MCP9600 ID
     DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));
@@ -590,14 +627,15 @@ int main()
     CMU->HFBUSCLKEN0 |= CMU_HFBUSCLKEN0_PRS;
 
     PRS->CH[0].CTRL = PRS_CH_CTRL_SOURCESEL_WTIMER0 | PRS_CH_CTRL_SIGSEL_WTIMER0OF;
-    PRS->CH[1].CTRL = PRS_CH_CTRL_ANDNEXT | PRS_CH_CTRL_SOURCESEL_WTIMER1 | PRS_CH_CTRL_SIGSEL_WTIMER1CC1;
-    PRS->CH[2].CTRL = PRS_CH_CTRL_INV | PRS_CH_CTRL_SOURCESEL_WTIMER1 | PRS_CH_CTRL_SIGSEL_WTIMER1CC2;
 
-    PRS->ROUTELOC0 |= ((uint32_t)0 << _PRS_ROUTELOC0_CH1LOC_SHIFT); // Output for the SSR
-    PRS->ROUTEPEN |= PRS_ROUTEPEN_CH1PEN;
+    PRS->CH[11].CTRL = PRS_CH_CTRL_ANDNEXT | PRS_CH_CTRL_SOURCESEL_WTIMER1 | PRS_CH_CTRL_SIGSEL_WTIMER1CC1;
+    PRS->CH[12].CTRL = PRS_CH_CTRL_INV | PRS_CH_CTRL_SOURCESEL_WTIMER1 | PRS_CH_CTRL_SIGSEL_WTIMER1CC2;
 
-    PRS->ROUTELOC0 |= PRS_ROUTELOC0_CH0LOC_LOC2; // Output Zero Cross for debug purposes
-    PRS->ROUTEPEN |= PRS_ROUTEPEN_CH0PEN;
+    PRS->ROUTELOC2 |= ((uint32_t)2 << _PRS_ROUTELOC2_CH11LOC_SHIFT); // Output for the SSR
+    PRS->ROUTEPEN |= PRS_ROUTEPEN_CH11PEN;
+
+    //PRS->ROUTELOC0 |= PRS_ROUTELOC0_CH0LOC_LOC2; // Output Zero Cross for debug purposes
+    //PRS->ROUTEPEN |= PRS_ROUTEPEN_CH0PEN;
 
     while(1)
     {
@@ -606,8 +644,99 @@ int main()
         static uint64_t ullLastPIDUpdate = 0;
         static uint64_t ullLastTempCheck = 0;
         static uint64_t ullLastStateUpdate = 0;
+        static uint64_t ullLastLvGLUpdate = 0;
 
         float fTemp;
+
+        lv_task_handler();
+
+        static uint8_t run_once = 1;
+
+        if(run_once)
+        {
+            lv_theme_t * th = lv_theme_material_init(0, NULL);
+            lv_theme_set_current(th);
+            /********************
+             * CREATE A SCREEN
+             *******************/
+            /* Create a new screen and load it
+            * Screen can be created from any type object type
+            * Now a Page is used which is an objects with scrollable content*/
+            lv_obj_t * scr = lv_page_create(NULL, NULL);
+            lv_disp_load_scr(scr);
+
+            /****************
+             * ADD A TITLE
+             ****************/
+            lv_obj_t * label = lv_label_create(scr, NULL); /*First parameters (scr) is the parent*/
+            lv_label_set_text(label, "Object usage demo");  /*Set the text*/
+            lv_obj_set_x(label, 50);                        /*Set the x coordinate*/
+
+            /***********************
+             * CREATE TWO BUTTONS
+             ***********************/
+            /*Create a button*/
+            lv_obj_t * btn1 = lv_btn_create(lv_disp_get_scr_act(NULL), NULL);         /*Create a button on the currently loaded screen*/
+            lv_obj_set_event_cb(btn1, btn_event_cb);                                  /*Set function to be called when the button is released*/
+            lv_obj_align(btn1, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);               /*Align below the label*/
+
+            /*Create a label on the button (the 'label' variable can be reused)*/
+            label = lv_label_create(btn1, NULL);
+            lv_label_set_text(label, "Button 1");
+
+            /*Copy the previous button*/
+            lv_obj_t * btn2 = lv_btn_create(scr, btn1);                 /*Second parameter is an object to copy*/
+            lv_obj_align(btn2, btn1, LV_ALIGN_OUT_RIGHT_MID, 50, 0);    /*Align next to the prev. button.*/
+
+            /*Create a label on the button*/
+            label = lv_label_create(btn2, NULL);
+            lv_label_set_text(label, "Button 2");
+
+            /****************
+             * ADD A SLIDER
+             ****************/
+            slider = lv_slider_create(scr, NULL);                            /*Create a slider*/
+            lv_obj_set_size(slider, lv_obj_get_width(scr)  / 3, LV_DPI / 3);            /*Set the size*/
+            lv_obj_align(slider, btn1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);                /*Align below the first button*/
+            lv_slider_set_value(slider, 30, false);                                            /*Set the current value*/
+
+            /***********************
+             * ADD A DROP DOWN LIST
+             ************************/
+            lv_obj_t * ddlist = lv_ddlist_create(scr, NULL);                     /*Create a drop down list*/
+            lv_obj_align(ddlist, slider, LV_ALIGN_OUT_RIGHT_TOP, 50, 0);         /*Align next to the slider*/
+            lv_obj_set_top(ddlist, true);                                        /*Enable to be on the top when clicked*/
+            lv_ddlist_set_options(ddlist, "None\nLittle\nHalf\nA lot\nAll");     /*Set the options*/
+            lv_obj_set_event_cb(ddlist, ddlist_event_cb);                        /*Set function to call on new option is chosen*/
+
+            /****************
+             * CREATE A CHART
+             ****************/
+            lv_obj_t * chart = lv_chart_create(scr, NULL);                         /*Create the chart*/
+            lv_obj_set_size(chart, lv_obj_get_width(scr) / 2, lv_obj_get_width(scr) / 4);   /*Set the size*/
+            lv_obj_align(chart, slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 50);                   /*Align below the slider*/
+            lv_chart_set_series_width(chart, 3);                                            /*Set the line width*/
+
+            /*Add a RED data series and set some points*/
+            lv_chart_series_t * dl1 = lv_chart_add_series(chart, LV_COLOR_RED);
+            lv_chart_set_next(chart, dl1, 10);
+            lv_chart_set_next(chart, dl1, 25);
+            lv_chart_set_next(chart, dl1, 45);
+            lv_chart_set_next(chart, dl1, 80);
+
+            /*Add a BLUE data series and set some points*/
+            lv_chart_series_t * dl2 = lv_chart_add_series(chart, lv_color_make(0x40, 0x70, 0xC0));
+            lv_chart_set_next(chart, dl2, 10);
+            lv_chart_set_next(chart, dl2, 25);
+            lv_chart_set_next(chart, dl2, 45);
+            lv_chart_set_next(chart, dl2, 80);
+            lv_chart_set_next(chart, dl2, 75);
+            lv_chart_set_next(chart, dl2, 505);
+
+            DBGPRINTLN_CTX("Free RAM: %lu B", get_free_ram());
+
+            run_once = 0;
+        }
 
         if(g_ullSystemTick > (ullLastBlink + 50))
         {
@@ -634,7 +763,7 @@ int main()
 //            ullLastInput = g_ullSystemTick;
 //        }
 
-        if(g_ullSystemTick > (ullLastTempCheck + 10))
+        if(g_ullSystemTick > (ullLastTempCheck + 100))
         {
             uint8_t ubStatus = mcp9600_get_status(0);
 
@@ -740,4 +869,207 @@ int main()
     }
 
     return 0;
+}
+
+void lv_port_disp_init(void)
+{
+    /*-------------------------
+     * Initialize your display
+     * -----------------------*/
+    disp_bl_init(2000);
+    disp_bl_set(0.5);
+
+    ili9488_init();
+
+    ili9488_set_rotation(1);
+
+    ili9488_display_on();
+
+    /*-----------------------------
+     * Create a buffer for drawing
+     *----------------------------*/
+
+    /* LittlevGL requires a buffer where it draws the objects. The buffer's has to be greater than 1 display row
+     *
+     * There are three buffering configurations:
+     * 1. Create ONE buffer with some rows: 
+     *      LittlevGL will draw the display's content here and writes it to your display
+     * 
+     * 2. Create TWO buffer with some rows: 
+     *      LittlevGL will draw the display's content to a buffer and writes it your display.
+     *      You should use DMA to write the buffer's content to the display.
+     *      It will enable LittlevGL to draw the next part of the screen to the other buffer while
+     *      the data is being sent form the first buffer. It makes rendering and flushing parallel.
+     * 
+     * 3. Create TWO screen-sized buffer: 
+     *      Similar to 2) but the buffer have to be screen sized. When LittlevGL is ready it will give the
+     *      whole frame to display. This way you only need to change the frame buffer's address instead of
+     *      copying the pixels.
+     * */
+
+    /* Example for 1) */
+    //static lv_disp_buf_t disp_buf_1;
+    //static lv_color_t buf1_1[LV_HOR_RES_MAX * 10];                      /*A buffer for 10 rows*/
+    //lv_disp_buf_init(&disp_buf_1, buf1_1, NULL, LV_HOR_RES_MAX * 10);   /*Initialize the display buffer*/
+
+    /* Example for 2) */
+    static lv_disp_buf_t disp_buf_2;
+    static lv_color_t buf2_1[LV_HOR_RES_MAX * 60];                        /*A buffer for 10 rows*/
+    static lv_color_t buf2_2[LV_HOR_RES_MAX * 60];                        /*An other buffer for 10 rows*/
+    lv_disp_buf_init(&disp_buf_2, buf2_1, buf2_2, LV_HOR_RES_MAX * 10);   /*Initialize the display buffer*/
+
+    /* Example for 3) */
+    //static lv_disp_buf_t disp_buf_3;
+    //static lv_color_t buf3_1[LV_HOR_RES_MAX * LV_VER_RES_MAX];            /*A screen sized buffer*/
+    //static lv_color_t buf3_2[LV_HOR_RES_MAX * LV_VER_RES_MAX];            /*An other screen sized buffer*/
+    //lv_disp_buf_init(&disp_buf_3, buf3_1, buf3_2, LV_HOR_RES_MAX * LV_VER_RES_MAX);   /*Initialize the display buffer*/
+
+
+    /*-----------------------------------
+     * Register the display in LittlevGL
+     *----------------------------------*/
+
+    lv_disp_drv_t disp_drv;                         /*Descriptor of a display driver*/
+    lv_disp_drv_init(&disp_drv);                    /*Basic initialization*/
+
+    /*Set up the functions to access to your display*/
+
+    /*Set the resolution of the display*/
+    disp_drv.hor_res = 480;
+    disp_drv.ver_res = 320;
+
+    /*Used to copy the buffer's content to the display*/
+    disp_drv.flush_cb = disp_flush;
+
+    /*Set a display buffer*/
+    disp_drv.buffer = &disp_buf_2;
+
+    /*Finally register the driver*/
+    lv_disp_drv_register(&disp_drv);
+}
+void lv_port_indev_init(void)
+{
+    /* Here you will find example implementation of input devices supported by LittelvGL:
+     *  - Touchpad
+     *  - Mouse (with cursor support)
+     *  - Keypad (supports GUI usage only with key)
+     *  - Encoder (supports GUI usage only with: left, right, push)
+     *  - Button (external buttons to press points on the screen)
+     *
+     *  The `..._read()` function are only examples.
+     *  You should shape them according to your hardware
+     */
+
+    lv_indev_drv_t indev_drv;
+
+    /*------------------
+     * Touchpad
+     * -----------------*/
+
+    /*Initialize your touchpad if you have*/
+    touchpad_init();
+
+    /*Register a touchpad input device*/
+    lv_indev_drv_init(&indev_drv);
+    indev_drv.type = LV_INDEV_TYPE_POINTER;
+    indev_drv.read_cb = touchpad_read;
+    indev_touchpad = lv_indev_drv_register(&indev_drv);
+}
+
+/* Flush the content of the internal buffer the specific area on the display
+ * You can use DMA or any hardware acceleration to do this operation in the background but
+ * 'lv_disp_flush_ready()' has to be called when finished. */
+static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
+{
+    /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
+
+    ili9488_set_window(area->x1, area->y1, area->x2, area->y2);
+
+    uint32_t block_size = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1);
+
+    while(block_size--)
+    {
+        ili9488_send_pixel_data((rgb565_t)(color_p++)->full);
+    }
+
+
+    /* IMPORTANT!!!
+     * Inform the graphics library that you are ready with the flushing*/
+    lv_disp_flush_ready(disp_drv);
+}
+
+/* Initialize your display and the required peripherals. */
+void disp_bl_init(uint32_t ulFrequency)
+{
+    CMU->HFPERCLKEN0 |= CMU_HFPERCLKEN0_TIMER1;
+
+    TIMER1->CTRL = TIMER_CTRL_RSSCOIST | TIMER_CTRL_PRESC_DIV1 | TIMER_CTRL_CLKSEL_PRESCHFPERCLK | TIMER_CTRL_FALLA_NONE | TIMER_CTRL_RISEA_NONE | TIMER_CTRL_MODE_UP;
+    TIMER1->TOP = (HFPER_CLOCK_FREQ / ulFrequency) - 1;
+    TIMER1->CNT = 0x0000;
+
+    TIMER1->CC[0].CTRL = TIMER_CC_CTRL_PRSCONF_LEVEL | TIMER_CC_CTRL_CUFOA_NONE | TIMER_CC_CTRL_COFOA_SET | TIMER_CC_CTRL_CMOA_CLEAR | TIMER_CC_CTRL_MODE_PWM;
+    TIMER1->CC[0].CCV = 0x0000;
+
+    TIMER1->ROUTELOC0 = TIMER_ROUTELOC0_CC0LOC_LOC2;
+    TIMER1->ROUTEPEN |= TIMER_ROUTEPEN_CC0PEN;
+
+    TIMER1->CMD = TIMER_CMD_START;
+
+    TIMER1->CC[0].CCVB = 0;
+}
+
+void disp_bl_set(float fBrightness)
+{
+    if(fBrightness > 1.f)
+        fBrightness = 1.f;
+    if(fBrightness < 0.f)
+        fBrightness = 0.f;
+
+    TIMER1->CC[0].CCVB = TIMER1->TOP * fBrightness;
+}
+
+/*Initialize your touchpad*/
+static void touchpad_init(void)
+{
+    ft6x36_isPressed = 0;
+    ft6x36_touchXLoc = 0;
+    ft6x36_touchYLoc = 0;
+    /*Your code comes here*/
+}
+/* Will be called by the library to read the touchpad */
+static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
+{
+    if(ft6x36_isPressed) // touchpad_is_pressed()
+        data->state = LV_INDEV_STATE_PR;
+    else
+        data->state = LV_INDEV_STATE_REL;
+
+    /*Set the pressed coordinates*/
+    data->point.x = ft6x36_touchXLoc;
+    data->point.y = ft6x36_touchYLoc;
+
+    /*Return `false` because we are not buffering and no more data to read*/
+    return false;
+}
+
+
+
+
+static void btn_event_cb(lv_obj_t * btn, lv_event_t event)
+{
+    if(event == LV_EVENT_RELEASED) {
+        /*Increase the button width*/
+        lv_coord_t width = lv_obj_get_width(btn);
+        lv_obj_set_width(btn, width + 20);
+    }
+}
+
+static  void ddlist_event_cb(lv_obj_t * ddlist, lv_event_t event)
+{
+    if(event == LV_EVENT_VALUE_CHANGED) {
+        uint16_t opt = lv_ddlist_get_selected(ddlist);            /*Get the id of selected option*/
+
+        lv_slider_set_value(slider, (opt * 100) / 4, true);       /*Modify the slider value according to the selection*/
+    }
+
 }

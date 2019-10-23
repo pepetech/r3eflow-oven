@@ -110,7 +110,7 @@ uint8_t ili9488_init()
 	ili9488_send_cmd(ILI9488_INV_CTL, ubBuf, 1); // Display Inversion Control
 
     ubBuf[0] = 0x02; // MCU
-    ubBuf[1] = 0x02; // Source, Gate scan dieection
+    ubBuf[1] = 0x02; // Source, Gate scan direction
 	ili9488_send_cmd(ILI9488_DISP_FUNC_CTL, ubBuf, 2); // Display Function Control RGB/MCU Interface Control
 
     ubBuf[0] = 0x00; // Disable 24 bit data
@@ -185,7 +185,7 @@ void ili9488_set_rotation(uint8_t ubRotation)
         case 3:
             ubBuf = ILI9488_MADCTL_MX | ILI9488_MADCTL_MY | ILI9488_MADCTL_MV | ILI9488_MADCTL_BGR;
             usMaxWidth = ILI9488_TFTHEIGHT - 1;
-            usMaxHeigth = ILI9488_TFTHEIGHT - 1;
+            usMaxHeigth = ILI9488_TFTWIDTH - 1;
             break;
         default:
             return;
@@ -235,30 +235,29 @@ void ili9488_fill_screen(rgb565_t xColor)
 
 uint8_t ili9488_set_window(uint16_t usX0, uint16_t usY0, uint16_t usX1, uint16_t usY1)
 {
-    if(usX0 > usX1)
-        return 0;
+    if(usX1 < 0) return 0;
+    if(usY1 < 0) return 0;
+    if(usX0 > ILI9488_TFTWIDTH - 1) return 0;
+    if(usY0 > ILI9488_TFTHEIGHT - 1) return 0;
 
-    if(usY0 > usY1)
-        return 0;
-
-    if(usX1 > usMaxWidth)
-        return 0;
-
-    if(usY1 > usMaxHeigth)
-        return 0;
+    /*Truncate the area to the screen*/
+    usX0 = usX0 < 0 ? 0 : usX0;
+    usY0 = usY0 < 0 ? 0 : usY0;
+    usX1 = usX1 > ILI9488_TFTWIDTH - 1 ? ILI9488_TFTWIDTH - 1 : usX1;
+    usY1 = usY1 > ILI9488_TFTHEIGHT - 1 ? ILI9488_TFTHEIGHT - 1 : usY1;
 
     uint8_t ubBuf[4];
 
     ubBuf[0] = usX0 >> 8;
-    ubBuf[1] = usX0 & 0xFF; // XSTART
+    ubBuf[1] = usX0 & 0x00FF; // XSTART
     ubBuf[2] = usX1 >> 8;
-    ubBuf[3] = usX1 & 0xFF; // XEND
+    ubBuf[3] = usX1 & 0x00FF; // XEND
     ili9488_send_cmd(ILI9488_C_ADDR_SET, ubBuf, 4); // Column addr set
 
     ubBuf[0] = usY0 >> 8;
-    ubBuf[1] = usY0 & 0xFF; // YSTART
+    ubBuf[1] = usY0 & 0x00FF; // YSTART
     ubBuf[2] = usY1 >> 8;
-    ubBuf[3] = usY1 & 0xFF; // YEND
+    ubBuf[3] = usY1 & 0x00FF; // YEND
     ili9488_send_cmd(ILI9488_P_ADDR_SET, ubBuf, 4); // Row addr set
 
     ili9488_send_cmd(ILI9488_RAM_WR, NULL, 0); // write to RAM

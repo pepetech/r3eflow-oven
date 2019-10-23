@@ -3,7 +3,8 @@
 
 static void gpio_isr(uint32_t ulFlags)
 {
-
+    if(ulFlags & BIT(3))
+    ft6x36_isr();
 }
 void _gpio_even_isr()
 {
@@ -71,7 +72,7 @@ void gpio_init()
                       | GPIO_P_MODEH_MODE13_DISABLED    // MAIN_HFXTAL_N
                       | GPIO_P_MODEH_MODE14_DISABLED    // MAIN_HFXTAL_P
                       | GPIO_P_MODEH_MODE15_DISABLED;   // NC
-    GPIO->P[1].DOUT   = BIT(11) | BIT(12);
+    GPIO->P[1].DOUT   = BIT(6) | BIT(11) | BIT(12);
     GPIO->P[1].OVTDIS = 0;
 
     // Port C
@@ -168,7 +169,7 @@ void gpio_init()
     GPIO->ROUTELOC0 = GPIO_ROUTELOC0_SWVLOC_LOC0; // SWO on PF2
 
     // External interrupts
-    GPIO->EXTIPSELL = GPIO_EXTIPSELL_EXTIPSEL0_PORTE            //
+    GPIO->EXTIPSELL = GPIO_EXTIPSELL_EXTIPSEL0_PORTB            // TFT_IRQ
                     | GPIO_EXTIPSELL_EXTIPSEL1_PORTB            //
                     | GPIO_EXTIPSELL_EXTIPSEL2_PORTB            //
                     | GPIO_EXTIPSELL_EXTIPSEL3_PORTB            //
@@ -185,7 +186,7 @@ void gpio_init()
                     | GPIO_EXTIPSELH_EXTIPSEL14_PORTF           //
                     | GPIO_EXTIPSELH_EXTIPSEL15_PORTA;          //
 
-    GPIO->EXTIPINSELL = GPIO_EXTIPINSELL_EXTIPINSEL0_PIN3       //
+    GPIO->EXTIPINSELL = GPIO_EXTIPINSELL_EXTIPINSEL0_PIN3       // TFT_IRQ
                       | GPIO_EXTIPINSELL_EXTIPINSEL1_PIN1       //
                       | GPIO_EXTIPINSELL_EXTIPINSEL2_PIN2       //
                       | GPIO_EXTIPINSELL_EXTIPINSEL3_PIN3       //
@@ -203,7 +204,7 @@ void gpio_init()
                       | GPIO_EXTIPINSELH_EXTIPINSEL15_PIN12;    //
 
     GPIO->EXTIRISE = 0; //
-    GPIO->EXTIFALL = 0; //
+    GPIO->EXTIFALL = BIT(3); // TFT_IRQ
 
     GPIO->IFC = _GPIO_IFC_MASK; // Clear pending IRQs
     IRQ_CLEAR(GPIO_EVEN_IRQn); // Clear pending vector
@@ -212,7 +213,7 @@ void gpio_init()
     IRQ_SET_PRIO(GPIO_ODD_IRQn, 0, 0); // Set priority 0,0 (max)
     IRQ_ENABLE(GPIO_EVEN_IRQn); // Enable vector
     IRQ_ENABLE(GPIO_ODD_IRQn); // Enable vector
-    GPIO->IEN = 0; // Enable interrupts
+    GPIO->IEN = BIT(3); // Enable interrupts
 }
 
 void play_sound(uint16_t usFrequency, uint32_t ulTime)
@@ -221,34 +222,34 @@ void play_sound(uint16_t usFrequency, uint32_t ulTime)
 
     if(!ubInit)
     {
-        CMU->HFPERCLKEN0 |= CMU_HFPERCLKEN0_TIMER3;
+        CMU->HFPERCLKEN0 |= CMU_HFPERCLKEN0_TIMER0;
 
-        TIMER3->CTRL = TIMER_CTRL_RSSCOIST | TIMER_CTRL_PRESC_DIV1 | TIMER_CTRL_CLKSEL_PRESCHFPERCLK | TIMER_CTRL_FALLA_NONE | TIMER_CTRL_RISEA_NONE | TIMER_CTRL_MODE_UP;
-        TIMER3->CNT = 0x0000;
+        TIMER0->CTRL = TIMER_CTRL_RSSCOIST | TIMER_CTRL_PRESC_DIV1 | TIMER_CTRL_CLKSEL_PRESCHFPERCLK | TIMER_CTRL_FALLA_NONE | TIMER_CTRL_RISEA_NONE | TIMER_CTRL_MODE_UP;
+        TIMER0->CNT = 0x0000;
 
-        TIMER3->CC[2].CTRL = TIMER_CC_CTRL_PRSCONF_LEVEL | TIMER_CC_CTRL_CUFOA_NONE | TIMER_CC_CTRL_COFOA_TOGGLE | TIMER_CC_CTRL_CMOA_NONE | TIMER_CC_CTRL_MODE_OUTPUTCOMPARE;
+        TIMER0->CC[0].CTRL = TIMER_CC_CTRL_PRSCONF_LEVEL | TIMER_CC_CTRL_CUFOA_NONE | TIMER_CC_CTRL_COFOA_TOGGLE | TIMER_CC_CTRL_CMOA_NONE | TIMER_CC_CTRL_MODE_OUTPUTCOMPARE;
 
-        TIMER3->ROUTELOC0 = TIMER_ROUTELOC0_CC2LOC_LOC0;
-        TIMER3->ROUTEPEN |= TIMER_ROUTEPEN_CC2PEN;
+        TIMER0->ROUTELOC0 = TIMER_ROUTELOC0_CC0LOC_LOC6;
+        TIMER0->ROUTEPEN |= TIMER_ROUTEPEN_CC0PEN;
 
         ubInit = 1;
     }
 
     if(!usFrequency)
     {
-        TIMER3->CMD = TIMER_CMD_STOP;
+        TIMER0->CMD = TIMER_CMD_STOP;
 
         return;
     }
 
-    TIMER3->TOP = (HFPER_CLOCK_FREQ / (usFrequency << 1)) - 1; // Double the frequency
+    TIMER0->TOP = (HFPER_CLOCK_FREQ / (usFrequency << 1)) - 1; // Double the frequency
 
-    TIMER3->CMD = TIMER_CMD_START;
+    TIMER0->CMD = TIMER_CMD_START;
 
     if(!ulTime)
         return;
 
     delay_ms(ulTime);
 
-    TIMER3->CMD = TIMER_CMD_STOP;
+    TIMER0->CMD = TIMER_CMD_STOP;
 }
