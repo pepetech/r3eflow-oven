@@ -7,7 +7,6 @@
 #include "atomic.h"
 #include "gpio.h"
 #include "i2c.h"
-#include "debug_macros.h"
 
 #define FT6X06_I2C_ADDR 0x38
 
@@ -89,10 +88,6 @@ struct ft6x36_event_t
     uint16_t usY;
 };
 
-extern volatile uint8_t ft6x36_isPressed;
-extern volatile uint16_t ft6x36_touchXLoc;
-extern volatile uint16_t ft6x36_touchYLoc;
-
 uint8_t ft6x36_init();
 void ft6x36_isr();
 void ft6x36_tick();
@@ -102,5 +97,9 @@ void ft6x36_set_event_callback(ft6x36_event_callback_fn_t pfFunc);
 uint8_t ft6x36_get_vendor_id();
 uint8_t ft6x36_get_chip_id();
 uint8_t ft6x36_get_firmware_version();
+
+uint8_t ft6x36_is_pressed();
+uint16_t ft6x36_get_x_coord();
+uint16_t ft6x36_get_y_coor();
 
 #endif // __FT6X06_H__

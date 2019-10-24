@@ -6,9 +6,9 @@ static volatile uint8_t ubTouchFIFORd = 0;
 static volatile uint8_t ubTouchFIFOWr = 0;
 static ft6x36_event_callback_fn_t pfEventCallback = NULL;
 
-volatile uint8_t ft6x36_isPressed = 0;
-volatile uint16_t ft6x36_touchXLoc = 0;
-volatile uint16_t ft6x36_touchYLoc = 0;
+static uint8_t ft6x36_isPressed = 0;
+static uint16_t ft6x36_touchXLoc = 0;
+static uint16_t ft6x36_touchYLoc = 0;
 
 static uint8_t ft6x36_read_register(uint8_t ubRegister)
 {
@@ -47,6 +47,12 @@ uint8_t ft6x36_init()
 
     //ft6x36_write_register(FT6X06_REG_PERIODACTIVE, 0x05);
     ft6x36_write_register(FT6X06_REG_TH_GROUP, 40);
+
+    delay_ms(10);
+
+    ft6x36_isPressed = 0;
+    ft6x36_touchXLoc = 0;
+    ft6x36_touchYLoc = 0;
 
     return 1;
 }
@@ -114,4 +120,17 @@ uint8_t ft6x36_get_chip_id()
 uint8_t ft6x36_get_firmware_version()
 {
     return ft6x36_read_register(FT6X06_REG_FIRMID);
+}
+
+uint8_t ft6x36_is_pressed()
+{
+    return ft6x36_isPressed;
+}
+uint16_t ft6x36_get_x_coord()
+{
+    return ft6x36_touchXLoc;
+}
+uint16_t ft6x36_get_y_coor()
+{
+    return ft6x36_touchYLoc;
 }

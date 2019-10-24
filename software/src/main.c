@@ -26,6 +26,7 @@
 #include "sk9822.h"
 #include "ili9488.h"
 #include "ft6x36.h"
+#include "ili9488_lv_drv.h"
 #include "lvgl.h"
 
 // Defines
@@ -57,24 +58,12 @@ static uint32_t get_free_ram();
 void get_device_name(char *pszDeviceName, uint32_t ulDeviceNameSize);
 static uint16_t get_device_revision();
 
-//lv forwards
-void lv_port_disp_init(void);
-void lv_port_indev_init(void);
-
-void disp_bl_init(uint32_t ulFrequency);
-void disp_bl_set(float fBrightness);
-
-static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
-
-static void touchpad_init(void);
-static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
-
+// lv forwards
 static void btn_event_cb(lv_obj_t * btn, lv_event_t event);
 static void ddlist_event_cb(lv_obj_t * ddlist, lv_event_t event);
 
-// Variables
+// lv Variables
 lv_indev_t * indev_touchpad;
-
 static lv_obj_t * slider;
 
 // ISRs
@@ -553,8 +542,8 @@ int main()
 
     // tft + LvGL init
     lv_init();
-    lv_port_disp_init();
-    lv_port_indev_init();
+    ili9488_lv_drv_init();
+    ft6x36_lv_drv_init();
 
     // MCP9600 ID
     DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));
@@ -870,190 +859,6 @@ int main()
 
     return 0;
 }
-
-void lv_port_disp_init(void)
-{
-    /*-------------------------
-     * Initialize your display
-     * -----------------------*/
-    disp_bl_init(2000);
-    disp_bl_set(0.5);
-
-    ili9488_init();
-
-    ili9488_set_rotation(1);
-
-    ili9488_display_on();
-
-    /*-----------------------------
-     * Create a buffer for drawing
-     *----------------------------*/
-
-    /* LittlevGL requires a buffer where it draws the objects. The buffer's has to be greater than 1 display row
-     *
-     * There are three buffering configurations:
-     * 1. Create ONE buffer with some rows: 
-     *      LittlevGL will draw the display's content here and writes it to your display
-     * 
-     * 2. Create TWO buffer with some rows: 
-     *      LittlevGL will draw the display's content to a buffer and writes it your display.
-     *      You should use DMA to write the buffer's content to the display.
-     *      It will enable LittlevGL to draw the next part of the screen to the other buffer while
-     *      the data is being sent form the first buffer. It makes rendering and flushing parallel.
-     * 
-     * 3. Create TWO screen-sized buffer: 
-     *      Similar to 2) but the buffer have to be screen sized. When LittlevGL is ready it will give the
-     *      whole frame to display. This way you only need to change the frame buffer's address instead of
-     *      copying the pixels.
-     * */
-
-    /* Example for 1) */
-    //static lv_disp_buf_t disp_buf_1;
-    //static lv_color_t buf1_1[LV_HOR_RES_MAX * 10];                      /*A buffer for 10 rows*/
-    //lv_disp_buf_init(&disp_buf_1, buf1_1, NULL, LV_HOR_RES_MAX * 10);   /*Initialize the display buffer*/
-
-    /* Example for 2) */
-    static lv_disp_buf_t disp_buf_2;
-    static lv_color_t buf2_1[LV_HOR_RES_MAX * 60];                        /*A buffer for 10 rows*/
-    static lv_color_t buf2_2[LV_HOR_RES_MAX * 60];                        /*An other buffer for 10 rows*/
-    lv_disp_buf_init(&disp_buf_2, buf2_1, buf2_2, LV_HOR_RES_MAX * 10);   /*Initialize the display buffer*/
-
-    /* Example for 3) */
-    //static lv_disp_buf_t disp_buf_3;
-    //static lv_color_t buf3_1[LV_HOR_RES_MAX * LV_VER_RES_MAX];            /*A screen sized buffer*/
-    //static lv_color_t buf3_2[LV_HOR_RES_MAX * LV_VER_RES_MAX];            /*An other screen sized buffer*/
-    //lv_disp_buf_init(&disp_buf_3, buf3_1, buf3_2, LV_HOR_RES_MAX * LV_VER_RES_MAX);   /*Initialize the display buffer*/
-
-
-    /*-----------------------------------
-     * Register the display in LittlevGL
-     *----------------------------------*/
-
-    lv_disp_drv_t disp_drv;                         /*Descriptor of a display driver*/
-    lv_disp_drv_init(&disp_drv);                    /*Basic initialization*/
-
-    /*Set up the functions to access to your display*/
-
-    /*Set the resolution of the display*/
-    disp_drv.hor_res = 480;
-    disp_drv.ver_res = 320;
-
-    /*Used to copy the buffer's content to the display*/
-    disp_drv.flush_cb = disp_flush;
-
-    /*Set a display buffer*/
-    disp_drv.buffer = &disp_buf_2;
-
-    /*Finally register the driver*/
-    lv_disp_drv_register(&disp_drv);
-}
-void lv_port_indev_init(void)
-{
-    /* Here you will find example implementation of input devices supported by LittelvGL:
-     *  - Touchpad
-     *  - Mouse (with cursor support)
-     *  - Keypad (supports GUI usage only with key)
-     *  - Encoder (supports GUI usage only with: left, right, push)
-     *  - Button (external buttons to press points on the screen)
-     *
-     *  The `..._read()` function are only examples.
-     *  You should shape them according to your hardware
-     */
-
-    lv_indev_drv_t indev_drv;
-
-    /*------------------
-     * Touchpad
-     * -----------------*/
-
-    /*Initialize your touchpad if you have*/
-    touchpad_init();
-
-    /*Register a touchpad input device*/
-    lv_indev_drv_init(&indev_drv);
-    indev_drv.type = LV_INDEV_TYPE_POINTER;
-    indev_drv.read_cb = touchpad_read;
-    indev_touchpad = lv_indev_drv_register(&indev_drv);
-}
-
-/* Flush the content of the internal buffer the specific area on the display
- * You can use DMA or any hardware acceleration to do this operation in the background but
- * 'lv_disp_flush_ready()' has to be called when finished. */
-static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
-{
-    /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
-
-    ili9488_set_window(area->x1, area->y1, area->x2, area->y2);
-
-    uint32_t block_size = (area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1);
-
-    while(block_size--)
-    {
-        ili9488_send_pixel_data((rgb565_t)(color_p++)->full);
-    }
-
-
-    /* IMPORTANT!!!
-     * Inform the graphics library that you are ready with the flushing*/
-    lv_disp_flush_ready(disp_drv);
-}
-
-/* Initialize your display and the required peripherals. */
-void disp_bl_init(uint32_t ulFrequency)
-{
-    CMU->HFPERCLKEN0 |= CMU_HFPERCLKEN0_TIMER1;
-
-    TIMER1->CTRL = TIMER_CTRL_RSSCOIST | TIMER_CTRL_PRESC_DIV1 | TIMER_CTRL_CLKSEL_PRESCHFPERCLK | TIMER_CTRL_FALLA_NONE | TIMER_CTRL_RISEA_NONE | TIMER_CTRL_MODE_UP;
-    TIMER1->TOP = (HFPER_CLOCK_FREQ / ulFrequency) - 1;
-    TIMER1->CNT = 0x0000;
-
-    TIMER1->CC[0].CTRL = TIMER_CC_CTRL_PRSCONF_LEVEL | TIMER_CC_CTRL_CUFOA_NONE | TIMER_CC_CTRL_COFOA_SET | TIMER_CC_CTRL_CMOA_CLEAR | TIMER_CC_CTRL_MODE_PWM;
-    TIMER1->CC[0].CCV = 0x0000;
-
-    TIMER1->ROUTELOC0 = TIMER_ROUTELOC0_CC0LOC_LOC2;
-    TIMER1->ROUTEPEN |= TIMER_ROUTEPEN_CC0PEN;
-
-    TIMER1->CMD = TIMER_CMD_START;
-
-    TIMER1->CC[0].CCVB = 0;
-}
-
-void disp_bl_set(float fBrightness)
-{
-    if(fBrightness > 1.f)
-        fBrightness = 1.f;
-    if(fBrightness < 0.f)
-        fBrightness = 0.f;
-
-    TIMER1->CC[0].CCVB = TIMER1->TOP * fBrightness;
-}
-
-/*Initialize your touchpad*/
-static void touchpad_init(void)
-{
-    ft6x36_isPressed = 0;
-    ft6x36_touchXLoc = 0;
-    ft6x36_touchYLoc = 0;
-    /*Your code comes here*/
-}
-/* Will be called by the library to read the touchpad */
-static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
-{
-    if(ft6x36_isPressed) // touchpad_is_pressed()
-        data->state = LV_INDEV_STATE_PR;
-    else
-        data->state = LV_INDEV_STATE_REL;
-
-    /*Set the pressed coordinates*/
-    data->point.x = ft6x36_touchXLoc;
-    data->point.y = ft6x36_touchYLoc;
-
-    /*Return `false` because we are not buffering and no more data to read*/
-    return false;
-}
-
-
-
 
 static void btn_event_cb(lv_obj_t * btn, lv_event_t event)
 {
