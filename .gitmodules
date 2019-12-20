@@ -1,0 +1,3 @@
+[submodule "software/src/lvgl"]
+	path = software/src/lvgl
+	url = https://github.com/gimbas/lvgl.git

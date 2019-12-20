@@ -6,7 +6,7 @@
 #include "ldma.h"
 #include "gpio.h"
 #include "ili9488.h"
-#include "lvgl.h"
+#include "lvgl/lvgl.h"
 
 #define LV_DRV_USE_LDMA 0
 #if LV_DRV_USE_LDMA == 1
