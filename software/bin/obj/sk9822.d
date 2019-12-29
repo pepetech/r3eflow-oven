@@ -87,6 +87,7 @@ bin/obj/sk9822.o: src/sk9822.c src/include/sk9822.h \
  /usr/arm-none-eabi/include/alloca.h /usr/arm-none-eabi/include/string.h \
  /usr/arm-none-eabi/include/xlocale.h \
  /usr/arm-none-eabi/include/strings.h \
- /usr/arm-none-eabi/include/sys/string.h src/include/cmu.h \
- src/include/msc.h src/include/ldma.h src/include/atomic.h \
- src/include/nvic.h src/include/utils.h
+ /usr/arm-none-eabi/include/sys/string.h src/peripheral/include/cmu.h \
+ src/peripheral/include/msc.h src/peripheral/include/ldma.h \
+ src/include/atomic.h src/peripheral/include/nvic.h src/include/utils.h \
+ src/include/utils.h

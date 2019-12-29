@@ -24,9 +24,8 @@
 #include "pid.h"
 #include "pac_lookup.h"
 #include "sk9822.h"
-#include "ili9488.h"
-#include "ft6x36.h"
-#include "ili9488_lv_drv.h"
+#include "lv_disp_ili9488.h"
+#include "lv_indev_ft6x36.h"
 #include "lvgl.h"
 
 // Defines
@@ -63,7 +62,6 @@ static void btn_event_cb(lv_obj_t * btn, lv_event_t event);
 static void ddlist_event_cb(lv_obj_t * ddlist, lv_event_t event);
 
 // lv Variables
-lv_indev_t * indev_touchpad;
 static lv_obj_t * slider;
 
 // ISRs
@@ -387,15 +385,15 @@ int init()
     else
         DBGPRINTLN_CTX("MCP9600 #7 init NOK!");
 
-    if(ili9488_init())
+    /*if(lv_disp_ili9488_init())
         DBGPRINTLN_CTX("ILI9488 init OK!");
     else
         DBGPRINTLN_CTX("ILI9488 init NOK!");
 
-    if(ft6x36_init())
+    if(lv_indev_ft6x36_init())
         DBGPRINTLN_CTX("FT6236 init OK!");
     else
-        DBGPRINTLN_CTX("FT6236 init NOK!");
+        DBGPRINTLN_CTX("FT6236 init NOK!");*/
 
     pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_OPERATING_RANGE, PID_KI_CAP, PID_KP, PID_KI, PID_KD);
 
@@ -542,8 +540,12 @@ int main()
 
     // tft + LvGL init
     lv_init();
-    ili9488_lv_drv_init();
-    ft6x36_lv_drv_init();
+    lv_disp_ili9488_init();
+    lv_indev_ft6x36_init();
+
+    lv_disp_ili9488_display_on();
+    lv_disp_ili9488_bl_init(20000);
+    lv_disp_ili9488_bl_set(0.8);
 
     // MCP9600 ID
     DBGPRINTLN_CTX("MCP9600 #0 ID 0x%02X Revision 0x%02X", mcp9600_get_id(0), mcp9600_get_revision(0));

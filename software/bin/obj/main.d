@@ -87,158 +87,134 @@ bin/obj/main.o: src/main.c \
  /usr/arm-none-eabi/include/alloca.h /usr/arm-none-eabi/include/math.h \
  src/include/debug_macros.h src/printf/include/printf.h \
  /usr/lib/gcc/arm-none-eabi/9.2.0/include/stdarg.h src/include/utils.h \
- src/include/nvic.h src/include/atomic.h src/include/systick.h \
- src/include/atomic.h src/include/cmu.h src/include/msc.h \
- src/include/rmu.h src/include/emu.h src/include/utils.h \
- src/include/nvic.h src/include/cmu.h src/include/gpio.h \
- src/include/systick.h src/include/ft6x36.h src/include/gpio.h \
- src/include/i2c.h src/include/dbg.h src/include/msc.h \
- src/include/crypto.h src/include/crc.h src/include/trng.h \
- src/include/rtcc.h src/include/adc.h src/include/emu.h \
- src/include/qspi.h src/include/usart.h \
+ src/peripheral/include/nvic.h src/include/atomic.h \
+ src/peripheral/include/systick.h src/peripheral/include/cmu.h \
+ src/peripheral/include/msc.h src/peripheral/include/rmu.h \
+ src/peripheral/include/emu.h src/peripheral/include/nvic.h \
+ src/peripheral/include/cmu.h src/peripheral/include/gpio.h \
+ src/peripheral/include/systick.h src/include/lv_indev_ft6x36.h \
+ src/include/atomic.h src/peripheral/include/i2c.h \
+ src/peripheral/include/ldma.h src/lvgl/include/lvgl.h \
+ src/lvgl/lvgl_source/include/lv_version.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_log.h src/include/lv_conf.h \
+ src/lvgl/lvgl_source/include/lv_conf_checker.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_task.h \
+ /usr/lib/gcc/arm-none-eabi/9.2.0/include/stdbool.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_mem.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_log.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_types.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_ll.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_math.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_async.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_task.h \
+ src/lvgl/lvgl_source/lv_hal/include/lv_hal.h \
+ src/lvgl/lvgl_source/lv_hal/include/lv_hal_disp.h \
+ src/lvgl/lvgl_source/lv_hal/include/lv_hal.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_color.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_area.h \
  /usr/arm-none-eabi/include/string.h /usr/arm-none-eabi/include/xlocale.h \
  /usr/arm-none-eabi/include/strings.h \
- /usr/arm-none-eabi/include/sys/string.h src/include/ldma.h \
- src/include/i2c.h src/include/mcp9600.h src/include/pid.h \
- src/include/pac_lookup.h src/include/sk9822.h src/include/ili9488.h \
- src/include/rgb565.h src/include/usart.h src/include/ft6x36.h \
- src/include/ili9488_lv_drv.h src/include/ili9488.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/lvgl.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_version.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_log.h \
- src/include/lv_conf.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_conf_checker.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_task.h \
- /usr/lib/gcc/arm-none-eabi/9.2.0/include/stdbool.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_mem.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_log.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_types.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_ll.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_math.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_async.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_task.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_hal/lv_hal.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_hal/lv_hal_disp.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_hal/lv_hal.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_hal/../lv_misc/lv_color.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_hal/../lv_misc/lv_area.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_hal/../lv_misc/lv_ll.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_hal/../lv_misc/lv_task.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_hal/lv_hal_indev.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_hal/lv_hal_tick.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/lv_obj.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/lv_style.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_font/lv_font.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_font/lv_symbol_def.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_misc/lv_color.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_misc/lv_area.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_misc/lv_anim.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_misc/lv_types.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_misc/lv_mem.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_misc/lv_ll.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_misc/lv_log.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_misc/lv_bidi.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_hal/lv_hal.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/lv_group.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/lv_obj.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/lv_indev.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_hal/lv_hal_indev.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/../lv_core/lv_group.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/lv_refr.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/lv_disp.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_core/lv_debug.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/lv_theme.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/../lv_core/lv_style.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/../lv_core/lv_group.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/lv_theme_templ.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/lv_theme_default.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/lv_theme_alien.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/lv_theme_night.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/lv_theme_zen.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/lv_theme_mono.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/lv_theme_nemo.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_themes/lv_theme_material.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_font/lv_font.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_font/lv_font_fmt_txt.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_font/lv_font.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_bidi.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_misc/lv_printf.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_btn.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_cont.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_core/lv_obj.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_core/lv_indev.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_imgbtn.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_btn.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw_img.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_core/lv_style.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_misc/lv_txt.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_misc/lv_area.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_misc/../lv_font/lv_font.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_img_decoder.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_misc/lv_fs.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_misc/lv_types.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_misc/lv_area.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw_basic.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_font/lv_font.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_misc/lv_color.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw_rect.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw_label.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/../lv_misc/lv_bidi.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw_img.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw_line.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw_triangle.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw_arc.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_img.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_misc/lv_fs.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_label.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_font/lv_font.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_font/lv_symbol_def.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_misc/lv_txt.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_draw/lv_draw.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_label.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_line.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_page.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_misc/lv_anim.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_cont.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_list.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_page.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_img.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_chart.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_line.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_table.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_cb.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_cpicker.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_bar.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_slider.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_bar.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_led.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_btnm.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_kb.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_btnm.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_ddlist.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_objx/lv_page.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_objx/lv_label.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_roller.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_ddlist.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_ta.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_canvas.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_objx/lv_img.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_win.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_tabview.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_objx/lv_win.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_tileview.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_mbox.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_gauge.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_lmeter.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_lmeter.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_sw.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_slider.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_arc.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_preload.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_arc.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_calendar.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/lv_spinbox.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_objx/../lv_objx/lv_ta.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_draw/lv_img_cache.h \
- /home/gimbas/Development/r3eflow-oven/software/src/lvgl/src/lv_draw/lv_img_decoder.h
+ /usr/arm-none-eabi/include/sys/string.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_ll.h \
+ src/lvgl/lvgl_source/lv_hal/include/lv_hal_indev.h \
+ src/lvgl/lvgl_source/lv_hal/include/lv_hal_tick.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_obj.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_style.h \
+ src/lvgl/lvgl_source/lv_font/include/lv_font.h \
+ src/lvgl/lvgl_source/lv_font/include/lv_symbol_def.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_anim.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_types.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_mem.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_bidi.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_group.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_obj.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_indev.h \
+ src/lvgl/lvgl_source/lv_hal/include/lv_hal_indev.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_group.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_refr.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_disp.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_debug.h \
+ src/lvgl/lvgl_source/lv_themes/include/lv_theme.h \
+ src/lvgl/lvgl_source/lv_core/include/lv_style.h \
+ src/lvgl/lvgl_source/lv_themes/include/lv_theme_templ.h \
+ src/lvgl/lvgl_source/lv_themes/include/lv_theme_default.h \
+ src/lvgl/lvgl_source/lv_themes/include/lv_theme_alien.h \
+ src/lvgl/lvgl_source/lv_themes/include/lv_theme_night.h \
+ src/lvgl/lvgl_source/lv_themes/include/lv_theme_zen.h \
+ src/lvgl/lvgl_source/lv_themes/include/lv_theme_mono.h \
+ src/lvgl/lvgl_source/lv_themes/include/lv_theme_nemo.h \
+ src/lvgl/lvgl_source/lv_themes/include/lv_theme_material.h \
+ src/lvgl/lvgl_source/lv_font/include/lv_font_fmt_txt.h \
+ src/lvgl/lvgl_source/lv_font/include/lv_font.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_printf.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_btn.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_cont.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_imgbtn.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_btn.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw_img.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_txt.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_area.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_img_decoder.h \
+ src/lvgl/lvgl_source/lv_misc/include/lv_fs.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw_basic.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw_rect.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw_label.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw_img.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw_line.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw_triangle.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw_arc.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_img.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_label.h \
+ src/lvgl/lvgl_source/lv_font/include/lv_symbol_def.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_draw.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_label.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_line.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_page.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_cont.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_list.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_page.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_img.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_chart.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_line.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_table.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_cb.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_cpicker.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_bar.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_slider.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_bar.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_led.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_btnm.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_kb.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_btnm.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_ddlist.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_roller.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_ddlist.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_ta.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_canvas.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_win.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_tabview.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_win.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_tileview.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_mbox.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_gauge.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_lmeter.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_lmeter.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_sw.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_slider.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_arc.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_preload.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_arc.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_calendar.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_spinbox.h \
+ src/lvgl/lvgl_source/lv_objx/include/lv_ta.h \
+ src/lvgl/lvgl_source/lv_draw/include/lv_img_cache.h \
+ src/include/lv_conf.h src/include/lv_disp_ili9488.h src/include/rgb565.h \
+ src/include/utils.h src/peripheral/include/usart.h \
+ src/peripheral/include/ldma.h src/peripheral/include/dbg.h \
+ src/peripheral/include/msc.h src/peripheral/include/crypto.h \
+ src/peripheral/include/crc.h src/peripheral/include/trng.h \
+ src/peripheral/include/rtcc.h src/peripheral/include/adc.h \
+ src/peripheral/include/emu.h src/peripheral/include/qspi.h \
+ src/include/mcp9600.h src/include/pid.h src/include/pac_lookup.h \
+ src/include/sk9822.h src/include/lv_disp_ili9488.h

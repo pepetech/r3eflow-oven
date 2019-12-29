@@ -17,7 +17,12 @@ SOURCEDIR = src
 OBJECTDIR = bin/obj
 INCLUDEDIR = include
 
-STRUCT := $(shell find $(SOURCEDIR) -type d -not -path "$(SOURCEDIR)/lvgl*")
+EXCLUDES = src/lvgl src/lvgl/docs src/lvgl/porting src/lvgl/scripts src/lvgl/scripts/built_in_font src/lvgl/src src/lvgl/.github src/lvgl/.github/ISSUE_TEMPLATE
+
+STRUCT := $(shell find $(SOURCEDIR) -type d)
+STRUCT := $(filter-out $(EXCLUDES), $(STRUCT))
+
+
 
 SOURCEDIRSTRUCT := $(filter-out %/include, $(STRUCT))
 INCLUDEDIRSTRUCT := $(filter %/include, $(STRUCT)) $(DEVICEDIR)/ $(COREDIR)/
@@ -62,9 +67,6 @@ CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-a
 LDFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
 LDLIBS = -lm -lc -lgcc -lnosys
 
-# include lvgl
-include $(LVGL_DIR)/lvgl/lvgl.mk
-
 ifeq ($(BUILD_TYPE), debug)
 CFLAGS += -g
 CXXFLAGS += -g
@@ -84,7 +86,6 @@ ASSOURCES := $(filter %.s, $(SRCFILES))
 ASOBJECTS := $(subst $(SOURCEDIR), $(OBJECTDIR), $(ASSOURCES:%.s=%.o))
 
 CSOURCES := $(filter %.c, $(SRCFILES))
-CSOURCES += $(CSRCS);
 COBJECTS := $(subst $(SOURCEDIR), $(OBJECTDIR), $(CSOURCES:%.c=%.o))
 
 CXXSOURCES := $(filter %.cpp, $(SRCFILES))

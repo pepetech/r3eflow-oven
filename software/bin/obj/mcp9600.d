@@ -69,5 +69,7 @@ bin/obj/mcp9600.o: src/mcp9600.c src/include/mcp9600.h \
  /opt/cmsis/cmsis-dfp-efm32gg11b/Device/SiliconLabs/EFM32GG11B/Include/efm32gg11b_uart.h \
  /opt/cmsis/cmsis-dfp-efm32gg11b/Device/SiliconLabs/EFM32GG11B/Include/efm32gg11b_af_ports.h \
  /opt/cmsis/cmsis-dfp-efm32gg11b/Device/SiliconLabs/EFM32GG11B/Include/efm32gg11b_af_pins.h \
- src/include/i2c.h src/include/utils.h src/include/cmu.h \
- src/include/msc.h src/include/atomic.h src/include/systick.h
+ src/peripheral/include/i2c.h src/include/utils.h \
+ src/peripheral/include/cmu.h src/peripheral/include/msc.h \
+ src/include/atomic.h src/peripheral/include/systick.h \
+ src/include/atomic.h

@@ -19,9 +19,24 @@
    Graphical settings
  *====================*/
 
+#define LV_HORIZONTAL      1
+#define LV_HORIZONTAL_FLIP 3
+#define LV_VERTICAL        0
+#define LV_VERTICAL_FLIP   2
+
+#define LV_ROTATE LV_HORIZONTAL
+
 /* Maximal horizontal and vertical resolution to support by the library.*/
-#define LV_HOR_RES_MAX          (480)
-#define LV_VER_RES_MAX          (320)
+#if ((LV_ROTATE == LV_HORIZONTAL) || (LV_ROTATE == LV_HORIZONTAL_FLIP))
+#define LV_HOR_RES_MAX          (480U)
+#define LV_VER_RES_MAX          (320U)
+#elif ((LV_ROTATE == LV_VERTICAL) || (LV_ROTATE == LV_VERTICAL_FLIP))
+#define LV_HOR_RES_MAX          (320U)
+#define LV_VER_RES_MAX          (480U)
+#else
+#define LV_HOR_RES_MAX          (480U)
+#define LV_VER_RES_MAX          (320U)
+#endif
 
 /* Color depth:
  * - 1:  1 byte per pixel
@@ -48,12 +63,12 @@
 
 /* Default display refresh period.
  * Can be changed in the display driver (`lv_disp_drv_t`).*/
-#define LV_DISP_DEF_REFR_PERIOD      30      /*[ms]*/
+#define LV_DISP_DEF_REFR_PERIOD      33      /*[ms]*/
 
 /* Dot Per Inch: used to initialize default sizes.
  * E.g. a button with width = LV_DPI / 2 -> half inch wide
  * (Not so important, you can adjust it to modify default sizes and spaces)*/
-#define LV_DPI              100     /*[px]*/
+#define LV_DPI              165     /*[px]*/
 
 /* Type of coordinates. Should be `int16_t` (or `int32_t` for extreme cases) */
 typedef int16_t lv_coord_t;
@@ -103,7 +118,7 @@ typedef int16_t lv_coord_t;
  * Can be changed in the Input device driver (`lv_indev_drv_t`)*/
 
 /* Input device read period in milliseconds */
-#define LV_INDEV_DEF_READ_PERIOD          30
+#define LV_INDEV_DEF_READ_PERIOD          LV_DISP_DEF_REFR_PERIOD
 
 /* Drag threshold in pixels */
 #define LV_INDEV_DEF_DRAG_LIMIT           10
