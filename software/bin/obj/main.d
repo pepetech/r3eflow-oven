@@ -217,4 +217,6 @@ bin/obj/main.o: src/main.c \
  src/peripheral/include/rtcc.h src/peripheral/include/adc.h \
  src/peripheral/include/emu.h src/peripheral/include/qspi.h \
  src/include/mcp9600.h src/include/pid.h src/include/pac_lookup.h \
- src/include/sk9822.h src/include/lv_disp_ili9488.h
+ src/include/sk9822.h src/include/lv_disp_ili9488.h src/include/oven.h \
+ src/include/mcp9600.h src/include/pid.h src/include/pac_lookup.h \
+ src/include/debug_macros.h src/include/ui.h

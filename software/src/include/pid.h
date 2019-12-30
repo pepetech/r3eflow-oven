@@ -30,4 +30,4 @@ void pid_free(pid_struct_t *pPID);
 
 void pid_calc(pid_struct_t *pPID);
 
-#endif  //__PID_H__
+#endif  // __PID_H__

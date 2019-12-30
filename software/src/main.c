@@ -27,26 +27,12 @@
 #include "lv_disp_ili9488.h"
 #include "lv_indev_ft6x36.h"
 #include "lvgl.h"
+#include "oven.h"
+#include "ui.h"
 
 // Defines
-// https://www.silabs.com/documents/public/application-notes/AN0030.pdf
-
-#define ZEROCROSS_DELAY     10    // us
-#define SSR_LATCH_OFFSET    10       // us
-#define ZEROCROSS_DEADTIME  300     // us
-
-#define PHASE_ANGLE_WIDTH   10000   // us
-#define MAX_PHASE_ANGLE     (PHASE_ANGLE_WIDTH - ZEROCROSS_DEADTIME)
-#define MIN_PHASE_ANGLE     (2 * SSR_LATCH_OFFSET)
-
-#define PID_OPERATING_RANGE 15 // PID starts at (setpoint -+ this value)
-#define PID_KP  350      // PID Proportional gain
-#define PID_KI  20       // PID Integration gain
-#define PID_KI_CAP  300  // PID Integration gain
-#define PID_KD  10        // PID Derivative gain
 
 // Structs
-static pid_struct_t *pOvenPID = NULL;
 
 // Forward declarations
 static void reset() __attribute__((noreturn));
@@ -65,16 +51,6 @@ static void ddlist_event_cb(lv_obj_t * ddlist, lv_event_t event);
 static lv_obj_t * slider;
 
 // ISRs
-void _wtimer0_isr()
-{
-    uint32_t ulFlags = WTIMER0->IFC;
-
-    if(ulFlags & WTIMER_IF_OF)
-    {
-        WTIMER1->CC[1].CCV = (PHASE_ANGLE_WIDTH - CLIP(g_usPacLookup[(uint16_t)pOvenPID->fOutput], MIN_PHASE_ANGLE, MAX_PHASE_ANGLE)) / 0.028f;
-        WTIMER1->CC[2].CCV = WTIMER1->CC[1].CCV + ((float)SSR_LATCH_OFFSET / 0.028f);
-    }
-}
 
 // Functions
 void reset()
@@ -385,23 +361,6 @@ int init()
     else
         DBGPRINTLN_CTX("MCP9600 #7 init NOK!");
 
-    /*if(lv_disp_ili9488_init())
-        DBGPRINTLN_CTX("ILI9488 init OK!");
-    else
-        DBGPRINTLN_CTX("ILI9488 init NOK!");
-
-    if(lv_indev_ft6x36_init())
-        DBGPRINTLN_CTX("FT6236 init OK!");
-    else
-        DBGPRINTLN_CTX("FT6236 init NOK!");*/
-
-    pOvenPID = pid_init(PHASE_ANGLE_WIDTH, 0, PID_OPERATING_RANGE, PID_KI_CAP, PID_KP, PID_KI, PID_KD);
-
-    if(pOvenPID)
-        DBGPRINTLN_CTX("Oven PID init OK!");
-    else
-        DBGPRINTLN_CTX("Oven PID init NOK!");
-
     return 0;
 }
 int main()
@@ -409,32 +368,6 @@ int main()
     play_sound(2000, 100);
     delay_ms(50);
     play_sound(2000, 100);
-
-    // Internal flash test
-    //DBGPRINTLN_CTX("Initial calibration dump:");
-
-    //for(init_calib_t *psCalibTbl = g_psInitCalibrationTable; psCalibTbl->pulRegister; psCalibTbl++)
-    //    DBGPRINTLN_CTX("  0x%08X -> 0x%08X", psCalibTbl->ulInitialCalibration, psCalibTbl->pulRegister);
-
-    /*
-    DBGPRINTLN_CTX("Boot lock word: %08X", g_psLockBits->CLW[0]);
-    DBGPRINTLN_CTX("User lock word: %08X", g_psLockBits->ULW);
-    DBGPRINTLN_CTX("Mass lock word: %08X", g_psLockBits->MLW);
-    msc_flash_word_write((uint32_t)&(g_psLockBits->MLW), 0xFFFFFFFD);
-    DBGPRINTLN_CTX("Mass lock word: %08X", g_psLockBits->MLW);
-
-    DBGPRINTLN_CTX("0x000FFFFC: %08X", *(volatile uint32_t *)0x000FFFFC);
-    DBGPRINTLN_CTX("0x00100000: %08X", *(volatile uint32_t *)0x00100000);
-    msc_flash_word_write(0x000FFFFC, 0x12344321);
-    msc_flash_word_write(0x00100000, 0xABCDDCBA);
-    DBGPRINTLN_CTX("0x000FFFFC: %08X", *(volatile uint32_t *)0x000FFFFC);
-    DBGPRINTLN_CTX("0x00100000: %08X", *(volatile uint32_t *)0x00100000);
-    msc_flash_unlock();
-    MSC->WRITECMD = MSC_WRITECMD_ERASEMAIN1;
-    msc_flash_lock();
-    DBGPRINTLN_CTX("0x000FFFFC: %08X", *(volatile uint32_t *)0x000FFFFC);
-    DBGPRINTLN_CTX("0x00100000: %08X", *(volatile uint32_t *)0x00100000);
-    */
 
     // QSPI
     DBGPRINTLN_CTX("Flash Part ID: %06X", qspi_flash_read_jedec_id());
@@ -445,94 +378,6 @@ int main()
 
     DBGPRINTLN_CTX("Flash ID: %02X%02X%02X%02X%02X%02X%02X%02X", ubFlashUID[0], ubFlashUID[1], ubFlashUID[2], ubFlashUID[3], ubFlashUID[4], ubFlashUID[5], ubFlashUID[6], ubFlashUID[7]);
 
-    //qspi_flash_chip_erase();
-
-    //uint8_t rd[16];
-
-    //qspi_flash_cmd(QSPI_FLASH_CMD_READ_FAST, 0x00008000, 3, 0, 8, NULL, 0, rd, 10);
-    //DBGPRINTLN_CTX("Flash RD C: %02X%02X%02X%02X%02X%02X%02X%02X %02X%02X%02X%02X%02X%02X%02X%02X", rd[0], rd[1], rd[2], rd[3], rd[4], rd[5], rd[6], rd[7], rd[8], rd[9], rd[10], rd[11], rd[12], rd[13], rd[14], rd[15]);
-
-    //DBGPRINTLN_CTX("Flash RD: %08X", *(volatile uint32_t *)0xC0000000);
-    //*(volatile uint32_t *)0xC0000000 = 0xABCDEF12;
-
-    //qspi_flash_cmd(QSPI_FLASH_CMD_READ_FAST, 0x00000000, 3, 0, 8, NULL, 0, rd, 10);
-    //DBGPRINTLN_CTX("Flash RD C: %02X%02X%02X%02X%02X%02X%02X%02X %02X%02X%02X%02X%02X%02X%02X%02X", rd[0], rd[1], rd[2], rd[3], rd[4], rd[5], rd[6], rd[7], rd[8], rd[9], rd[10], rd[11], rd[12], rd[13], rd[14], rd[15]);
-
-    //uint32_t wr = 0xA2B3C4D5;
-    //qspi_flash_busy_wait();
-    //qspi_flash_write_enable();
-    //qspi_flash_cmd(QSPI_FLASH_CMD_WRITE, 0x00000004, 3, 0, 0, (uint8_t*)&wr, 4, NULL, 0);
-    //qspi_flash_busy_wait();
-
-    //qspi_flash_cmd(QSPI_FLASH_CMD_READ_FAST, 0x00000000, 3, 0, 8, NULL, 0, rd, 10);
-    //DBGPRINTLN_CTX("Flash RD C: %02X%02X%02X%02X%02X%02X%02X%02X %02X%02X%02X%02X%02X%02X%02X%02X", rd[0], rd[1], rd[2], rd[3], rd[4], rd[5], rd[6], rd[7], rd[8], rd[9], rd[10], rd[11], rd[12], rd[13], rd[14], rd[15]);
-
-    //*(volatile uint32_t *)0xC0000000 = 0x12AB34CD;
-
-    //////// Test for page wrapping (write beyond page boundary)
-
-    /*
-    for(uint8_t i = 0; i <= 64; i++)
-        *(volatile uint32_t *)(0xC0000000 + i * 4) = 0x0123ABCD;
-
-    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC0000000); // CD
-    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC0000001); // AB
-    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC0000002); // 23
-    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC0000003); // 01
-    DBGPRINTLN_CTX("Flash RD: %08X", *(volatile uint32_t *)0xC0000000); // 0123ABCD
-    DBGPRINTLN_CTX("Flash RD: %08X", *(volatile uint32_t *)0xC0000010); // 0123ABCD
-    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC00000FC); // CD
-    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC00000FD); // AB
-    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC00000FE); // 23
-    DBGPRINTLN_CTX("Flash RD: %02X", *(volatile uint8_t *)0xC00000FF); // 01
-    DBGPRINTLN_CTX("Flash RD: %08X", *(volatile uint32_t *)0xC0000100); // 0123ABCD
-    */
-
-    //////// Test for code copy to QSPI flash
-
-    /*
-    for(uint32_t i = 0; i < bin_v1_test_bin_qspi_len / 4; i++)
-        *(volatile uint32_t *)(0x04000000 + i * 4) = *(uint32_t *)(bin_v1_test_bin_qspi + i * 4);
-
-    DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000000);
-    DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000001);
-    DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000002);
-    DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000003);
-
-    DBGPRINTLN_CTX("QSPI Dest %08X", get_family_name);
-    DBGPRINTLN_CTX("Device: %s%hu", get_family_name((DEVINFO->PART & _DEVINFO_PART_DEVICE_FAMILY_MASK) >> _DEVINFO_PART_DEVICE_FAMILY_SHIFT), (DEVINFO->PART & _DEVINFO_PART_DEVICE_NUMBER_MASK) >> _DEVINFO_PART_DEVICE_NUMBER_SHIFT);
-    */
-
-    //DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000000);
-    //DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000001);
-    //DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000002);
-    //DBGPRINTLN_CTX("QSPI RD: %02X", *(volatile uint8_t *)0xC0000003);
-    //DBGPRINTLN_CTX("Boot RD: %02X", *(volatile uint8_t *)0x0FE10000);
-    //DBGPRINTLN_CTX("Data RD: %02X", *(volatile uint8_t *)0x0FE00000);
-
-    //qspi_flash_cmd(QSPI_FLASH_CMD_READ_FAST, 0x00000000, 3, 0, 8, NULL, 0, rd, 10);
-    //DBGPRINTLN_CTX("Flash RD C: %02X%02X%02X%02X%02X%02X%02X%02X %02X%02X%02X%02X%02X%02X%02X%02X", rd[0], rd[1], rd[2], rd[3], rd[4], rd[5], rd[6], rd[7], rd[8], rd[9], rd[10], rd[11], rd[12], rd[13], rd[14], rd[15]);
-
-    //DBGPRINTLN_CTX("QSPI RD: %08X", *(volatile uint32_t *)0xC0000000);
-    //DBGPRINTLN_CTX("QSPI RD: %08X", *(volatile uint32_t *)0xC0000004);
-
-    //for(uint8_t i = 0; i < 112; i++)
-    //{
-    //    usart0_spi_transfer_byte(0xFF); // G
-    //    usart0_spi_transfer_byte(0xFF); // R
-    //    usart0_spi_transfer_byte(0xFF); // B
-    //}
-
-    //delay_ms(1000);
-
-    //for(uint8_t i = 0; i < 112; i++)
-    //{
-    //    usart0_spi_transfer_byte(0x00); // G
-    //    usart0_spi_transfer_byte(0x00); // R
-    //    usart0_spi_transfer_byte(0x00); // B
-    //}
-
-    //delay_ms(1000);
 
     // LEDs init
     sk9822_init();
@@ -541,7 +386,9 @@ int main()
     // tft + LvGL init
     lv_init();
     lv_disp_ili9488_init();
+    DBGPRINTLN_CTX("ILI9488 init!");
     lv_indev_ft6x36_init();
+    DBGPRINTLN_CTX("FT6236 init!");
 
     lv_disp_ili9488_display_on();
     lv_disp_ili9488_bl_init(20000);
@@ -558,176 +405,100 @@ int main()
     mcp9600_set_sensor_config(7, MCP9600_TYPE_K | MCP9600_FILT_COEF_0);
     mcp9600_set_config(7, MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
 
-    // PID initialization
-    pOvenPID->fSetpoint = 160.f;
+    oven_init();
 
-    /*
-        Function description:
+    do
+    {
+        lv_theme_t * th = lv_theme_material_init(0, NULL);
+        lv_theme_set_current(th);
+        /********************
+         * CREATE A SCREEN
+         *******************/
+        /* Create a new screen and load it
+        * Screen can be created from any type object type
+        * Now a Page is used which is an objects with scrollable content*/
+        lv_obj_t * scr = lv_page_create(NULL, NULL);
+        lv_disp_load_scr(scr);
 
-        ZEROCROSS = Rising edge of the zero cross detector (goes high when the wave is about to cross, not after)
-        WTIMER0_OF = Goes high ZEROCROSS_DELAY microseconds after ZEROCROSS
-        PRS_CH0 = Generates a pulse when WTIMER0_OF goes high
-        WTIMER1_CC1 = Goes low ZEROCROSS_DELAY microseconds after ZEROCROSS, goes high when the TRIAC should be turned on
-        WTIMER1_CC2 = Goes low ZEROCROSS_DELAY microseconds after ZEROCROSS, goes high when the TRIAC should be turned off
-        PRS_CH1 = Follows WTIMER1_CC1 and ANDs it with PRS_CH2
-        PRS_CH2 = Follows WTIMER1_CC2 and inverts it
-        TRIAC_OUT = TRIAC control signal
+        /****************
+         * ADD A TITLE
+         ****************/
+        lv_obj_t * label = lv_label_create(scr, NULL); /*First parameters (scr) is the parent*/
+        lv_label_set_text(label, "Object usage demo");  /*Set the text*/
+        lv_obj_set_x(label, 50);                        /*Set the x coordinate*/
 
-        --------------------------
+        /***********************
+         * CREATE TWO BUTTONS
+         ***********************/
+        /*Create a button*/
+        lv_obj_t * btn1 = lv_btn_create(lv_disp_get_scr_act(NULL), NULL);         /*Create a button on the currently loaded screen*/
+        lv_obj_set_event_cb(btn1, btn_event_cb);                                  /*Set function to be called when the button is released*/
+        lv_obj_align(btn1, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);               /*Align below the label*/
 
-        ZEROCROSS -> Trigger WTIMER0_CC0 -> Start WTIMER0
-        WTIMER0_OF -> Pulse PRS_CH0 -> Trigger WTIMER1_CC0 -> Start WTIMER1
-        WTIMER1_CC1 -> Level PRS_CH1 -------->
-                                            -> AND -> TRIAC_OUT
-        WTIMER1_CC2 -> Level PRS_CH2 -> NOT ->
-    */
+        /*Create a label on the button (the 'label' variable can be reused)*/
+        label = lv_label_create(btn1, NULL);
+        lv_label_set_text(label, "Button 1");
 
-    // Wide Timer 0 - Delay zero cross
-    CMU->HFPERCLKEN1 |= CMU_HFPERCLKEN1_WTIMER0;
+        /*Copy the previous button*/
+        lv_obj_t * btn2 = lv_btn_create(scr, btn1);                 /*Second parameter is an object to copy*/
+        lv_obj_align(btn2, btn1, LV_ALIGN_OUT_RIGHT_MID, 50, 0);    /*Align next to the prev. button.*/
 
-    WTIMER0->CTRL = WTIMER_CTRL_RSSCOIST | WTIMER_CTRL_PRESC_DIV1 | WTIMER_CTRL_CLKSEL_PRESCHFPERCLK | WTIMER_CTRL_FALLA_NONE | WTIMER_CTRL_RISEA_RELOADSTART | WTIMER_CTRL_OSMEN | WTIMER_CTRL_MODE_UP;
-    WTIMER0->TOP = (float)ZEROCROSS_DELAY / 0.028f;
-    WTIMER0->CNT = 0x00000000;
-    WTIMER0->ROUTELOC0 = ((uint32_t)0 << _WTIMER_ROUTELOC0_CC0LOC_SHIFT);
-    WTIMER0->ROUTEPEN |= WTIMER_ROUTEPEN_CC0PEN;
+        /*Create a label on the button*/
+        label = lv_label_create(btn2, NULL);
+        lv_label_set_text(label, "Button 2");
 
-    WTIMER0->CC[0].CTRL = WTIMER_CC_CTRL_FILT_ENABLE | WTIMER_CC_CTRL_INSEL_PIN | WTIMER_CC_CTRL_CUFOA_NONE | WTIMER_CC_CTRL_COFOA_NONE | WTIMER_CC_CTRL_CMOA_NONE | WTIMER_CC_CTRL_MODE_OFF;
+        /****************
+         * ADD A SLIDER
+         ****************/
+        slider = lv_slider_create(scr, NULL);                            /*Create a slider*/
+        lv_obj_set_size(slider, lv_obj_get_width(scr)  / 3, LV_DPI / 3);            /*Set the size*/
+        lv_obj_align(slider, btn1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);                /*Align below the first button*/
+        lv_slider_set_value(slider, 30, false);                                            /*Set the current value*/
 
-    WTIMER0->IFC = _WTIMER_IFC_MASK; // Clear all flags
-    IRQ_CLEAR(WTIMER0_IRQn); // Clear pending vector
-    IRQ_SET_PRIO(WTIMER0_IRQn, 0, 0); // Set priority 0,0 (max)
-    IRQ_ENABLE(WTIMER0_IRQn); // Enable vector
-    WTIMER0->IEN = WTIMER_IEN_OF; // Enable OF flag
+        /***********************
+         * ADD A DROP DOWN LIST
+         ************************/
+        lv_obj_t * ddlist = lv_ddlist_create(scr, NULL);                     /*Create a drop down list*/
+        lv_obj_align(ddlist, slider, LV_ALIGN_OUT_RIGHT_TOP, 50, 0);         /*Align next to the slider*/
+        lv_obj_set_top(ddlist, true);                                        /*Enable to be on the top when clicked*/
+        lv_ddlist_set_options(ddlist, "None\nLittle\nHalf\nA lot\nAll");     /*Set the options*/
+        lv_obj_set_event_cb(ddlist, ddlist_event_cb);                        /*Set function to call on new option is chosen*/
 
-    // Wide Timer 1 - Output phase angle control
-    CMU->HFPERCLKEN1 |= CMU_HFPERCLKEN1_WTIMER1;
+        /****************
+         * CREATE A CHART
+         ****************/
+        lv_obj_t * chart = lv_chart_create(scr, NULL);                         /*Create the chart*/
+        lv_obj_set_size(chart, lv_obj_get_width(scr) / 2, lv_obj_get_width(scr) / 4);   /*Set the size*/
+        lv_obj_align(chart, slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 50);                   /*Align below the slider*/
+        lv_chart_set_series_width(chart, 3);                                            /*Set the line width*/
 
-    WTIMER1->CTRL = WTIMER_CTRL_RSSCOIST | WTIMER_CTRL_PRESC_DIV1 | WTIMER_CTRL_CLKSEL_PRESCHFPERCLK | WTIMER_CTRL_FALLA_NONE | WTIMER_CTRL_RISEA_RELOADSTART | WTIMER_CTRL_OSMEN | WTIMER_CTRL_MODE_UP;
-    WTIMER1->TOP = 0xFFFFFFFF;
-    WTIMER1->CNT = 0x00000000;
+        /*Add a RED data series and set some points*/
+        lv_chart_series_t * dl1 = lv_chart_add_series(chart, LV_COLOR_RED);
+        lv_chart_set_next(chart, dl1, 10);
+        lv_chart_set_next(chart, dl1, 25);
+        lv_chart_set_next(chart, dl1, 45);
+        lv_chart_set_next(chart, dl1, 80);
 
-    WTIMER1->CC[0].CTRL = WTIMER_CC_CTRL_INSEL_PRS | WTIMER_CC_CTRL_PRSSEL_PRSCH0 | WTIMER_CC_CTRL_CUFOA_NONE | WTIMER_CC_CTRL_COFOA_NONE | WTIMER_CC_CTRL_CMOA_NONE | WTIMER_CC_CTRL_MODE_OFF;
+        /*Add a BLUE data series and set some points*/
+        lv_chart_series_t * dl2 = lv_chart_add_series(chart, lv_color_make(0x40, 0x70, 0xC0));
+        lv_chart_set_next(chart, dl2, 10);
+        lv_chart_set_next(chart, dl2, 25);
+        lv_chart_set_next(chart, dl2, 45);
+        lv_chart_set_next(chart, dl2, 80);
+        lv_chart_set_next(chart, dl2, 75);
+        lv_chart_set_next(chart, dl2, 505);
 
-    WTIMER1->CC[1].CTRL = WTIMER_CC_CTRL_PRSCONF_LEVEL | WTIMER_CC_CTRL_CUFOA_NONE | WTIMER_CC_CTRL_COFOA_NONE | WTIMER_CC_CTRL_CMOA_SET | WTIMER_CC_CTRL_MODE_OUTPUTCOMPARE;
-    WTIMER1->CC[1].CCV = (float)7500 / 0.028f;
+        DBGPRINTLN_CTX("Free RAM: %lu B", get_free_ram());
 
-    WTIMER1->CC[2].CTRL = WTIMER_CC_CTRL_PRSCONF_LEVEL | WTIMER_CC_CTRL_CUFOA_NONE | WTIMER_CC_CTRL_COFOA_NONE | WTIMER_CC_CTRL_CMOA_SET | WTIMER_CC_CTRL_MODE_OUTPUTCOMPARE;
-    WTIMER1->CC[2].CCV = (float)(7500 + SSR_LATCH_OFFSET) / 0.028f;
+    } while(0);
 
-    // PRS
-    CMU->HFBUSCLKEN0 |= CMU_HFBUSCLKEN0_PRS;
-
-    PRS->CH[0].CTRL = PRS_CH_CTRL_SOURCESEL_WTIMER0 | PRS_CH_CTRL_SIGSEL_WTIMER0OF;
-
-    PRS->CH[11].CTRL = PRS_CH_CTRL_ANDNEXT | PRS_CH_CTRL_SOURCESEL_WTIMER1 | PRS_CH_CTRL_SIGSEL_WTIMER1CC1;
-    PRS->CH[12].CTRL = PRS_CH_CTRL_INV | PRS_CH_CTRL_SOURCESEL_WTIMER1 | PRS_CH_CTRL_SIGSEL_WTIMER1CC2;
-
-    PRS->ROUTELOC2 |= ((uint32_t)2 << _PRS_ROUTELOC2_CH11LOC_SHIFT); // Output for the SSR
-    PRS->ROUTEPEN |= PRS_ROUTEPEN_CH11PEN;
-
-    //PRS->ROUTELOC0 |= PRS_ROUTELOC0_CH0LOC_LOC2; // Output Zero Cross for debug purposes
-    //PRS->ROUTEPEN |= PRS_ROUTEPEN_CH0PEN;
-
-    while(1)
+    for(;;)
     {
         static uint64_t ullLastBlink = 0;
         static uint64_t ullLastInput = 0;
-        static uint64_t ullLastPIDUpdate = 0;
-        static uint64_t ullLastTempCheck = 0;
-        static uint64_t ullLastStateUpdate = 0;
         static uint64_t ullLastLvGLUpdate = 0;
 
-        float fTemp;
-
         lv_task_handler();
-
-        static uint8_t run_once = 1;
-
-        if(run_once)
-        {
-            lv_theme_t * th = lv_theme_material_init(0, NULL);
-            lv_theme_set_current(th);
-            /********************
-             * CREATE A SCREEN
-             *******************/
-            /* Create a new screen and load it
-            * Screen can be created from any type object type
-            * Now a Page is used which is an objects with scrollable content*/
-            lv_obj_t * scr = lv_page_create(NULL, NULL);
-            lv_disp_load_scr(scr);
-
-            /****************
-             * ADD A TITLE
-             ****************/
-            lv_obj_t * label = lv_label_create(scr, NULL); /*First parameters (scr) is the parent*/
-            lv_label_set_text(label, "Object usage demo");  /*Set the text*/
-            lv_obj_set_x(label, 50);                        /*Set the x coordinate*/
-
-            /***********************
-             * CREATE TWO BUTTONS
-             ***********************/
-            /*Create a button*/
-            lv_obj_t * btn1 = lv_btn_create(lv_disp_get_scr_act(NULL), NULL);         /*Create a button on the currently loaded screen*/
-            lv_obj_set_event_cb(btn1, btn_event_cb);                                  /*Set function to be called when the button is released*/
-            lv_obj_align(btn1, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);               /*Align below the label*/
-
-            /*Create a label on the button (the 'label' variable can be reused)*/
-            label = lv_label_create(btn1, NULL);
-            lv_label_set_text(label, "Button 1");
-
-            /*Copy the previous button*/
-            lv_obj_t * btn2 = lv_btn_create(scr, btn1);                 /*Second parameter is an object to copy*/
-            lv_obj_align(btn2, btn1, LV_ALIGN_OUT_RIGHT_MID, 50, 0);    /*Align next to the prev. button.*/
-
-            /*Create a label on the button*/
-            label = lv_label_create(btn2, NULL);
-            lv_label_set_text(label, "Button 2");
-
-            /****************
-             * ADD A SLIDER
-             ****************/
-            slider = lv_slider_create(scr, NULL);                            /*Create a slider*/
-            lv_obj_set_size(slider, lv_obj_get_width(scr)  / 3, LV_DPI / 3);            /*Set the size*/
-            lv_obj_align(slider, btn1, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);                /*Align below the first button*/
-            lv_slider_set_value(slider, 30, false);                                            /*Set the current value*/
-
-            /***********************
-             * ADD A DROP DOWN LIST
-             ************************/
-            lv_obj_t * ddlist = lv_ddlist_create(scr, NULL);                     /*Create a drop down list*/
-            lv_obj_align(ddlist, slider, LV_ALIGN_OUT_RIGHT_TOP, 50, 0);         /*Align next to the slider*/
-            lv_obj_set_top(ddlist, true);                                        /*Enable to be on the top when clicked*/
-            lv_ddlist_set_options(ddlist, "None\nLittle\nHalf\nA lot\nAll");     /*Set the options*/
-            lv_obj_set_event_cb(ddlist, ddlist_event_cb);                        /*Set function to call on new option is chosen*/
-
-            /****************
-             * CREATE A CHART
-             ****************/
-            lv_obj_t * chart = lv_chart_create(scr, NULL);                         /*Create the chart*/
-            lv_obj_set_size(chart, lv_obj_get_width(scr) / 2, lv_obj_get_width(scr) / 4);   /*Set the size*/
-            lv_obj_align(chart, slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 50);                   /*Align below the slider*/
-            lv_chart_set_series_width(chart, 3);                                            /*Set the line width*/
-
-            /*Add a RED data series and set some points*/
-            lv_chart_series_t * dl1 = lv_chart_add_series(chart, LV_COLOR_RED);
-            lv_chart_set_next(chart, dl1, 10);
-            lv_chart_set_next(chart, dl1, 25);
-            lv_chart_set_next(chart, dl1, 45);
-            lv_chart_set_next(chart, dl1, 80);
-
-            /*Add a BLUE data series and set some points*/
-            lv_chart_series_t * dl2 = lv_chart_add_series(chart, lv_color_make(0x40, 0x70, 0xC0));
-            lv_chart_set_next(chart, dl2, 10);
-            lv_chart_set_next(chart, dl2, 25);
-            lv_chart_set_next(chart, dl2, 45);
-            lv_chart_set_next(chart, dl2, 80);
-            lv_chart_set_next(chart, dl2, 75);
-            lv_chart_set_next(chart, dl2, 505);
-
-            DBGPRINTLN_CTX("Free RAM: %lu B", get_free_ram());
-
-            run_once = 0;
-        }
 
         if(g_ullSystemTick > (ullLastBlink + 50))
         {
@@ -747,116 +518,7 @@ int main()
             ullLastBlink = g_ullSystemTick;
         }
 
-//        if(GPIO->P[0].DIN & BIT(2) && g_ullSystemTick > (ullLastInput + 500))
-//        {
-//            pOvenPID->fSetpoint += 2.f;
-//
-//            ullLastInput = g_ullSystemTick;
-//        }
-
-        if(g_ullSystemTick > (ullLastTempCheck + 100))
-        {
-            uint8_t ubStatus = mcp9600_get_status(0);
-
-            if(ubStatus & MCP9600_TH_UPDT)
-            {
-                fTemp = mcp9600_get_hj_temp(0);
-                //float fCold = mcp9600_get_cj_temp(MCP9600_0);
-                //float fDelta = mcp9600_get_temp_delta(MCP9600_0);
-
-                mcp9600_set_status(0, 0x00);
-                //mcp9600_set_config(MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
-
-                pOvenPID->fDeltaTime = (float)(g_ullSystemTick - ullLastPIDUpdate) * 0.001f;
-                pOvenPID->fValue = fTemp;
-
-                pid_calc(pOvenPID);
-
-                DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - ullLastPIDUpdate);
-                DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", fTemp);
-                //DBGPRINTLN_CTX("PID - MCP9600 cold %.3f C", fCold);
-                //DBGPRINTLN_CTX("PID - MCP9600 delta %.3f C", fDelta);
-                DBGPRINTLN_CTX("PID - temp target %.3f C", pOvenPID->fSetpoint);
-                DBGPRINTLN_CTX("PID - integral %.3f", pOvenPID->fIntegral);
-                DBGPRINTLN_CTX("PID - output %.2f / %d", pOvenPID->fOutput, PHASE_ANGLE_WIDTH);
-                //DBGPRINTLN_CTX("PID - output linear compensated %d / %d", g_usPacLookup[(uint16_t)pOvenPID->fOutput], PHASE_ANGLE_WIDTH);
-
-                ullLastPIDUpdate = g_ullSystemTick;
-            }
-
-            ullLastTempCheck = g_ullSystemTick;
-        }
-
-        if(g_ullSystemTick > (ullLastStateUpdate + 500))
-        {
-            static uint64_t ullTimer = 0;
-            static uint8_t ubState = 0;
-
-            switch(ubState)
-            {
-                case 0:     // preheat
-                    DBGPRINTLN_CTX("State - preheat");
-                    DBGPRINTLN_CTX("State - progress - %.3f C / 160 C", fTemp);
-                    pOvenPID->fSetpoint = 145;
-                    if(fTemp > 145)
-                    {
-                        ubState = 1;
-                        ullTimer = g_ullSystemTick;
-                    }
-                    break;
-
-                case 1:     // soak
-                    DBGPRINTLN_CTX("State - soak");
-                    DBGPRINTLN_CTX("State - progress - %lu ms left", (ullTimer + 70000) - g_ullSystemTick);
-                    pOvenPID->fSetpoint = 160;
-                    if(g_ullSystemTick > (ullTimer + 70000))
-                    {
-                        ubState = 2;
-                        ullTimer = g_ullSystemTick;
-                    }
-
-                    break;
-
-                case 2:     // reflow
-                    DBGPRINTLN_CTX("State - reflow");
-                    DBGPRINTLN_CTX("State - progress - %.3f C / 220 C", fTemp);
-                    pOvenPID->fSetpoint = 240;
-                    if(fTemp > 220)
-                    {
-                        ubState = 3;
-                        ullTimer = g_ullSystemTick;
-                    }
-                    break;
-
-                case 3:     // cool
-                    DBGPRINTLN_CTX("State - cool");
-                    pOvenPID->fSetpoint = 0;
-                    break;
-
-                default:
-                    DBGPRINTLN_CTX("State - default");
-                    pOvenPID->fSetpoint = 0;
-                    break;
-            }
-
-            ullLastStateUpdate = g_ullSystemTick;
-        }
-
-        /*
-        DBGPRINTLN_CTX("ADC Temp: %.2f", adc_get_temperature());
-        DBGPRINTLN_CTX("EMU Temp: %.2f", emu_get_temperature());
-
-        DBGPRINTLN_CTX("HFXO Startup: %.2f pF", cmu_hfxo_get_startup_cap());
-        DBGPRINTLN_CTX("HFXO Startup: %.2f uA", cmu_hfxo_get_startup_current());
-        DBGPRINTLN_CTX("HFXO Steady: %.2f pF", cmu_hfxo_get_steady_cap());
-        DBGPRINTLN_CTX("HFXO Steady: %.2f uA", cmu_hfxo_get_steady_current());
-        DBGPRINTLN_CTX("HFXO PMA [%03X]: %.2f uA", cmu_hfxo_get_pma_ibtrim(), cmu_hfxo_get_pma_current());
-        DBGPRINTLN_CTX("HFXO PDA [resistor%03X]: %.2f uA", cmu_hfxo_get_pda_ibtrim(1), cmu_hfxo_get_pda_current(0));
-
-        //sleep();
-
-        DBGPRINTLN_CTX("RTCC Time: %lu", rtcc_get_time());
-        */
+        oven_task();
     }
 
     return 0;
