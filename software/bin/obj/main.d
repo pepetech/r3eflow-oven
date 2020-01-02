@@ -219,4 +219,5 @@ bin/obj/main.o: src/main.c \
  src/include/mcp9600.h src/include/pid.h src/include/pac_lookup.h \
  src/include/sk9822.h src/include/lv_disp_ili9488.h src/include/oven.h \
  src/include/mcp9600.h src/include/pid.h src/include/pac_lookup.h \
- src/include/debug_macros.h src/include/ui.h
+ src/include/debug_macros.h src/include/ui.h src/include/sk9822.h \
+ src/include/lv_indev_ft6x36.h

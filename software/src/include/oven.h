@@ -23,8 +23,29 @@
 #define PID_KI_CAP  300  // PID Integration gain
 #define PID_KD  10        // PID Derivative gain
 
+typedef enum {
+    IDLE,
+    ABORT,
+    PREHEAT_RAMP,
+    PREHEAT,
+    SOAK_RAMP,
+    SOAK,
+    REFLOW_RAMP,
+    REFLOW,
+    COOLDOWN
+} ovenMode_t;
+
+typedef enum {
+    ERRONEOUS_STATE,
+    USER_ABORT,
+    TEMP_PROB_FAILURE,
+    TARGET_UNREACHEAD,
+    RESET
+} ovenErr_t;
+
 void oven_init();
 void oven_task();
-
+void oven_start();
+void oven_abort(ovenErr_t cause);
 
 #endif  // __OVEN_H__

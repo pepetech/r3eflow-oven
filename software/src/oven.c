@@ -134,64 +134,74 @@ void oven_task()
         if(g_ullSystemTick > (ullLastStateUpdate + 500))
         {
             static uint64_t ullTimer = 0;
-            static uint8_t ubState = 4;
+            static ovenMode_t xOvenMode = 4;
 
-            switch(ubState)
+            switch(xOvenMode)
             {
-                case 0:     // preheat
+                case PREHEAT:     // preheat
                     DBGPRINTLN_CTX("State - preheat");
                     DBGPRINTLN_CTX("State - progress - %.3f C / 160 C", fTemp);
                     pOvenPID->fSetpoint = 145;
                     if(fTemp > 145)
                     {
-                        ubState = 1;
+                        xOvenMode = SOAK;
                         ullTimer = g_ullSystemTick;
                     }
                     break;
 
-                case 1:     // soak
+                case SOAK:     // soak
                     DBGPRINTLN_CTX("State - soak");
                     DBGPRINTLN_CTX("State - progress - %lu ms left", (ullTimer + 70000) - g_ullSystemTick);
                     pOvenPID->fSetpoint = 160;
                     if(g_ullSystemTick > (ullTimer + 70000))
                     {
-                        ubState = 2;
+                        xOvenMode = REFLOW;
                         ullTimer = g_ullSystemTick;
                     }
 
                     break;
 
-                case 2:     // reflow
+                case REFLOW:     // reflow
                     DBGPRINTLN_CTX("State - reflow");
                     DBGPRINTLN_CTX("State - progress - %.3f C / 220 C", fTemp);
                     pOvenPID->fSetpoint = 240;
                     if(fTemp > 220)
                     {
-                        ubState = 3;
+                        xOvenMode = COOLDOWN;
                         ullTimer = g_ullSystemTick;
                     }
                     break;
 
-                case 3:     // cool
+                case COOLDOWN:     // cool
                     DBGPRINTLN_CTX("State - cool");
                     pOvenPID->fSetpoint = 0;
                     if(fTemp < 60)
                     {
-                        ubState = 4;
+                        xOvenMode = IDLE;
                         ullTimer = g_ullSystemTick;
                     }
                     break;
 
-                case 4:     // idle
+                case IDLE:     // idle
                     DBGPRINTLN_CTX("State - idle");
                     break;
 
                 default:
-                    DBGPRINTLN_CTX("State - erroneous state");
+                    oven_abort(ERRONEOUS_STATE);
                     pOvenPID->fSetpoint = 0;
                     break;
             }
 
             ullLastStateUpdate = g_ullSystemTick;
         }
+}
+
+void oven_start()
+{
+
+}
+
+void oven_abort(ovenErr_t cause)
+{
+
 }
