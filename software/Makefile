@@ -1,7 +1,7 @@
 # App Config
-ARM_LIBROOT ?= /opt/arm-cmsis/
-DEVICEDIR = $(ARM_LIBROOT)/SiliconLabs.EFM32GG11B_DFP.5.7.0/Device/SiliconLabs/EFM32GG11B/Include
-COREDIR = $(ARM_LIBROOT)/ARM.CMSIS.5.6.0/CMSIS/Include
+DEVICEDIR = /opt/cmsis/cmsis-dfp-efm32gg11b/Device/SiliconLabs/EFM32GG11B/Include
+COREDIR = /opt/cmsis/cmsis-core/CMSIS/Include
+LVGL_DIR = ${shell pwd}/src
 MCU_TYPE = EFM32GG11B420F2048GQ100
 HFXO_VALUE = 8000000UL
 LFXO_VALUE = 32768UL
@@ -9,7 +9,7 @@ APP_ADDRESS = 0x00000000
 APP_NAME = R3FLOW_Firmware
 
 # Multiprocessing
-MAX_PARALLEL = 
+MAX_PARALLEL = 4
 
 # Directories
 TARGETDIR = bin
@@ -17,7 +17,12 @@ SOURCEDIR = src
 OBJECTDIR = bin/obj
 INCLUDEDIR = include
 
+EXCLUDES = src/lvgl src/lvgl/docs src/lvgl/porting src/lvgl/scripts src/lvgl/scripts/built_in_font src/lvgl/src src/lvgl/.github src/lvgl/.github/ISSUE_TEMPLATE
+
 STRUCT := $(shell find $(SOURCEDIR) -type d)
+STRUCT := $(filter-out $(EXCLUDES), $(STRUCT))
+
+
 
 SOURCEDIRSTRUCT := $(filter-out %/include, $(STRUCT))
 INCLUDEDIRSTRUCT := $(filter %/include, $(STRUCT)) $(DEVICEDIR)/ $(COREDIR)/
