@@ -62,9 +62,9 @@ static void lv_disp_ili9488_flush(lv_disp_drv_t * disp_drv, const lv_area_t * ar
 
     while(block_size--)
     {
-        usart2_spi_write_byte((rgb565_t)(color_p)->ch.red, 0);
-        usart2_spi_write_byte((rgb565_t)(color_p)->ch.green, 0);
-        usart2_spi_write_byte((rgb565_t)(color_p++)->ch.blue, 0);
+        usart2_spi_write_byte((rgb565_t)(color_p)->ch.red << 3, 0);
+        usart2_spi_write_byte((rgb565_t)(color_p)->ch.green << 2, 0);
+        usart2_spi_write_byte((rgb565_t)(color_p++)->ch.blue << 3, 0);
     }
 
     ILI9488_UNSELECT();
