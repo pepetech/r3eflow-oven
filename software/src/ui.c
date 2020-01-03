@@ -92,7 +92,7 @@ void ui_init()
 void ui_task()
 {
     static uint64_t ullLastBlink = 0;
-    if(g_ullSystemTick > (ullLastBlink + 50))
+    if(g_ullSystemTick > (ullLastBlink + 66))
     {
         static uint8_t ubLastLED = 7;
 

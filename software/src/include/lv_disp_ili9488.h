@@ -2,7 +2,7 @@
 #define __LV_DISP_ILI9488_H__
 
 #include <em_device.h>
-#include "rgb565.h"
+#include "ldma.h"
 #include "systick.h"
 #include "utils.h"
 #include "usart.h"

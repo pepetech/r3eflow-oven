@@ -62,10 +62,15 @@ static void lv_disp_ili9488_flush(lv_disp_drv_t * disp_drv, const lv_area_t * ar
 
     while(block_size--)
     {
-        usart2_spi_write_byte((rgb565_t)(color_p)->ch.red << 3, 0);
-        usart2_spi_write_byte((rgb565_t)(color_p)->ch.green << 2, 0);
-        usart2_spi_write_byte((rgb565_t)(color_p++)->ch.blue << 3, 0);
+        while(!(USART2->STATUS & USART_STATUS_TXBL)); // wait while buffer is full
+        USART2->TXDATA = color_p->ch.red << 3; // load transfer buffer
+        while(!(USART2->STATUS & USART_STATUS_TXBL)); // wait while buffer is full
+        USART2->TXDATA = color_p->ch.green << 2; // load transfer buffer
+        while(!(USART2->STATUS & USART_STATUS_TXBL)); // wait while buffer is full
+        USART2->TXDATA = (color_p++)->ch.blue << 3; // load transfer buffer
     }
+    
+    while(!(USART2->STATUS & USART_STATUS_TXC)); // wait for spic transfer complete
 
     ILI9488_UNSELECT();
 
@@ -186,9 +191,10 @@ uint8_t lv_disp_ili9488_init()
      *      the data is being sent form the first buffer. It makes rendering and flushing parallel.
      */
     static lv_disp_buf_t disp_buf_2;
-    static lv_color_t buf2_1[LV_HOR_RES_MAX * 10];                        /*A buffer for 10 rows*/
-    static lv_color_t buf2_2[LV_HOR_RES_MAX * 10];                        /*An other buffer for 10 rows*/
-    lv_disp_buf_init(&disp_buf_2, buf2_1, buf2_2, LV_HOR_RES_MAX * 10);   /*Initialize the display buffer*/
+    static lv_color_t buf2_1[DISP_BUF_SIZE];                        /*A buffer for 40 rows*/
+    //static lv_color_t buf2_2[DISP_BUF_SIZE];                         /* Another buffer for 40 rows*/
+    //lv_disp_buf_init(&disp_buf_2, buf2_1, buf2_2, DISP_BUF_SIZE);   /*Initialize the display buffer*/
+    lv_disp_buf_init(&disp_buf_2, buf2_1, NULL, DISP_BUF_SIZE);   /*Initialize the display buffer*/
 
     /*-----------------------------------
      * Register the display in LittlevGL
