@@ -8,6 +8,7 @@
 #include "nvic.h"
 #include "pac_lookup.h"
 #include "debug_macros.h"
+#include "ui.h"
 
 #define ZEROCROSS_DELAY     10    // us
 #define SSR_LATCH_OFFSET    10       // us
@@ -43,9 +44,14 @@ typedef enum {
     RESET
 } ovenErr_t;
 
+static const char *ovenERR_str[] = {
+    "erroneous state", "user abort", "temperature probe failure", "target unreached", "reset"
+};
+
 void oven_init();
 void oven_task();
 void oven_start();
 void oven_abort(ovenErr_t cause);
+void oven_clr_err();
 
 #endif  // __OVEN_H__

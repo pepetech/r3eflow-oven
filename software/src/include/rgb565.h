@@ -48,6 +48,16 @@
 #define RGB565_EXTRACT_GREEN(c)     ((c & 0x07E0) >> 3)
 #define RGB565_EXTRACT_BLUE(c)      ((c & 0x001F) << 3)
 
-typedef uint16_t rgb565_t;
+typedef union
+{
+    struct
+    {
+        uint16_t red : 5;
+        uint16_t green : 6;
+        uint16_t red : 5;
+    } ch;
+    uint8_t full;
+} rgb565_t;
+typedef struct
 
 #endif // __RGB565_H__
