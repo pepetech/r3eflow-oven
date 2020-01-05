@@ -211,6 +211,7 @@ void oven_start()
 
 void oven_abort(ovenErr_t reason)
 {
+    xOvenErr = reason;
     xOvenMode = ABORT;
 }
 

@@ -8,6 +8,7 @@
 #include "lvgl.h"
 #include "oven.h"
 #include "ringled.h"
+#include "sound.h"
 
 void ui_init();
 void ui_task();

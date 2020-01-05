@@ -61,9 +61,10 @@ OBJDUMP = arm-none-eabi-objdump
 GDB = arm-none-eabi-gdb
 
 # Compillers & Linker flags
+OPTIMIZATION = -O3
 ASFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
-CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Os -std=gnu99 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DHFXO_VALUE=$(HFXO_VALUE) -DLFXO_VALUE=$(LFXO_VALUE) -DBUILD_VERSION=$(BUILD_VERSION)
-CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions -Os -std=c++17 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DHFXO_VALUE=$(HFXO_VALUE) -DLFXO_VALUE=$(LFXO_VALUE) -DBUILD_VERSION=$(BUILD_VERSION)
+CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding $(OPTIMIZATION) -std=gnu99 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DHFXO_VALUE=$(HFXO_VALUE) -DLFXO_VALUE=$(LFXO_VALUE) -DBUILD_VERSION=$(BUILD_VERSION)
+CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions $(OPTIMIZATION) -std=c++17 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DHFXO_VALUE=$(HFXO_VALUE) -DLFXO_VALUE=$(LFXO_VALUE) -DBUILD_VERSION=$(BUILD_VERSION)
 LDFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
 LDLIBS = -lm -lc -lgcc -lnosys
 
