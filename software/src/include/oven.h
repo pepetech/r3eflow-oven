@@ -2,13 +2,12 @@
 #define __OVEN_H__
 
 #include <em_device.h>
+#include "debug_macros.h"
 #include "systick.h"
 #include "mcp9600.h"
 #include "pid.h"
 #include "nvic.h"
 #include "pac_lookup.h"
-#include "debug_macros.h"
-#include "ui.h"
 
 #define ZEROCROSS_DELAY     10    // us
 #define SSR_LATCH_OFFSET    10       // us
@@ -50,8 +49,10 @@ static const char *ovenERR_str[] = {
 
 void oven_init();
 void oven_task();
+ovenMode_t oven_get_mode();
 void oven_start();
 void oven_abort(ovenErr_t cause);
+ovenErr_t oven_get_err();
 void oven_clr_err();
 
 #endif  // __OVEN_H__

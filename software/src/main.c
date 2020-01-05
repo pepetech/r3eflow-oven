@@ -29,6 +29,7 @@
 #include "lvgl.h"
 #include "oven.h"
 #include "ui.h"
+#include "sound.h"
 
 // Defines
 
@@ -324,8 +325,8 @@ int init()
     DBGPRINTLN_CTX("EMU - R5V VBUS Current: %.2f mA", adc_get_r5v_vbus_current());
     DBGPRINTLN_CTX("EMU - R5V VREGO Voltage: %.2f mV", adc_get_r5v_vrego());
 
-    play_sound(1500, 500);
-    delay_ms(100);
+    sound_play(1500, 500);
+    delay_ms(600);
 
 
     DBGPRINTLN_CTX("Scanning I2C bus 0...");
@@ -358,9 +359,9 @@ int init()
 }
 int main()
 {
-    play_sound(2000, 100);
-    delay_ms(50);
-    play_sound(2000, 100);
+    sound_play(2000, 100);
+    sound_queue_add(0, 50);
+    sound_queue_add(2000, 100);
 
     // QSPI
     DBGPRINTLN_CTX("Flash Part ID: %06X", qspi_flash_read_jedec_id());
@@ -402,6 +403,8 @@ int main()
 
     ui_init();
 
+    oven_clr_err();
+
     DBGPRINTLN_CTX("Free RAM: %lu B", get_free_ram());
 
     for(;;)
@@ -411,6 +414,8 @@ int main()
         ui_task();
 
         oven_task();
+
+        ringled_task();
     }
 
     return 0;

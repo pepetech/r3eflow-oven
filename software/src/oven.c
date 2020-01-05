@@ -4,6 +4,8 @@ static pid_struct_t *pOvenPID = NULL;
 
 ovenMode_t xOvenMode = 4;
 
+ovenErr_t xOvenErr;
+
 void _wtimer0_isr()
 {
     uint32_t ulFlags = WTIMER0->IFC;
@@ -197,21 +199,27 @@ void oven_task()
         }
 }
 
+ovenMode_t oven_get_mode()
+{
+    return xOvenMode;
+}
+
 void oven_start()
 {
     xOvenMode = PREHEAT;
-    ui_set_led_style(STYLE_WORKING);
 }
 
 void oven_abort(ovenErr_t reason)
 {
     xOvenMode = ABORT;
-    ui_set_led_style(STYLE_ABORT);
-    ui_abort_popup(reason);
+}
+
+ovenErr_t oven_get_err()
+{
+    return xOvenErr;
 }
 
 void oven_clr_err()
 {
     xOvenMode = IDLE;
-    ui_set_led_style(STYLE_IDLE);
 }

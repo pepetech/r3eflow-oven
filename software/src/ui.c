@@ -1,33 +1,8 @@
 #include "ui.h"
 
-typedef enum {
-    LED_OFF,
-    LED_STATIC,
-    LED_SCROLL,
-    LED_PROGRESS,
-    LED_BREATHING
-} led_mode_t;
-
-typedef union
-{
-    struct
-    {
-        uint8_t blue;
-        uint8_t green;
-        uint8_t red;
-    } ch;
-    uint32_t full;
-} led_color_t;
-
-typedef struct
-{
-    led_mode_t mode;
-    led_color_t color;
-} led_style_t;
-
-led_style_t xLedStyle;
-
 // func prototypes
+void ui_abort_popup(ovenErr_t reason);
+
 static void create_main_tab(lv_obj_t * parent);
 static void create_data_tab(lv_obj_t * parent);
 static void create_profile_tab(lv_obj_t * parent);
@@ -61,25 +36,49 @@ void ui_init()
     create_data_tab(dataTab);
     create_profile_tab(profileTab);
     create_settings_tab(settingsTab);
-
-    ui_set_led_style(STYLE_IDLE);
 }
 
-void ui_set_led_style(led_style_presets_t ledStyle)
+void ui_task()
 {
-    switch(ledStyle)
+    static ovenMode_t lastMode = ABORT;
+    ovenMode_t currMode = oven_get_mode();
+
+    if(lastMode != currMode)
     {
-        case STYLE_ABORT:
-            xLedStyle.color.full = 0x000000FF;
-            xLedStyle.mode = LED_STATIC;
-            break;
-        case STYLE_IDLE:
-            xLedStyle.color.full = 0x00FF0000;
-            xLedStyle.mode = LED_STATIC;
-            break;
-        case STYLE_WORKING:
-            xLedStyle.color.full = 0x0000FF00;
-            xLedStyle.mode = LED_SCROLL;
+        switch(currMode)
+        {
+            case IDLE:
+                ringled_set_style(STYLE_IDLE);
+                break;
+            case ABORT:
+                //ringled_set_style(STYLE_ABORT);
+                ui_abort_popup(oven_get_err());
+                break;
+            case PREHEAT_RAMP:
+            case PREHEAT:
+            case SOAK_RAMP:
+            case SOAK:
+            case REFLOW_RAMP:
+            case REFLOW:
+            case COOLDOWN:
+                //ringled_set_style(STYLE_WORKING);
+                break;
+        }
+
+        lastMode = currMode;
+    }
+
+    switch(currMode)
+    {
+        case IDLE:
+        case ABORT:
+        case PREHEAT_RAMP:
+        case PREHEAT:
+        case SOAK_RAMP:
+        case SOAK:
+        case REFLOW_RAMP:
+        case REFLOW:
+        case COOLDOWN:
             break;
     }
 }
@@ -94,122 +93,6 @@ void ui_abort_popup(ovenErr_t reason)
     lv_obj_set_width(abrtPopup, 200);
     lv_obj_set_event_cb(abrtPopup, abort_popup_event);
     lv_obj_align(abrtPopup, NULL, LV_ALIGN_CENTER, 0, 0); /*Align to the corner*/
-}
-
-void led_task()
-{
-    static uint8_t led_scroll_pos;
-    static uint8_t led_scroll_rate;
-
-    led_mode_t lastLedMode = LED_OFF;
-
-    if (xLedStyle.mode != lastLedMode)
-    {
-        switch(xLedStyle.mode)
-        {
-            case LED_OFF:
-
-                for (uint8_t i = 0; i < SK9822_NUM_LEDS; i++)
-                {
-                    sk9822_set_color(i, 0x00, 0x00, 0x00, 0x00, 0);
-                }
-                sk9822_update();
-
-                break;
-            case LED_STATIC:
-
-                for (uint8_t i = 0; i < SK9822_NUM_LEDS; i++)
-                {
-                    sk9822_set_color(i, 1, xLedStyle.color.ch.red, xLedStyle.color.ch.green, xLedStyle.color.ch.blue, 0);
-                }
-                sk9822_update();
-
-                break;
-            case LED_SCROLL:
-
-                led_scroll_pos = 0;
-                led_scroll_rate = 100;
-
-                break;
-
-            case LED_PROGRESS: // TODO
-            case LED_BREATHING: // TODO
-            default:
-                xLedStyle.mode = LED_OFF;
-                break;
-        }
-
-        lastLedMode = xLedStyle.mode;
-    }
-
-    switch(xLedStyle.mode)
-    {
-        case LED_OFF:
-        case LED_STATIC:
-            break;
-        case LED_SCROLL:
-            {
-            static uint64_t ullLastScrollUpdate = 0;
-
-            if(g_ullSystemTick > (ullLastScrollUpdate + led_scroll_rate))
-            {
-                uint8_t leds[4];
-
-                switch(led_scroll_pos)
-                {
-                    case 0:
-                        leds[0] = led_scroll_pos;
-                        leds[1] = SK9822_LAST_LED;
-                        leds[2] = SK9822_LAST_LED - 1;
-                        leds[3] = SK9822_LAST_LED - 2;
-                        break;
-                    case 1:
-                        leds[0] = led_scroll_pos;
-                        leds[1] = 0;
-                        leds[2] = SK9822_LAST_LED;
-                        leds[3] = SK9822_LAST_LED - 1;
-                        break;
-                    case 2:
-                        leds[0] = led_scroll_pos;
-                        leds[1] = 1;
-                        leds[2] = 0;
-                        leds[3] = SK9822_LAST_LED;
-                        break;
-                    default:
-                        leds[0] = led_scroll_pos;
-                        leds[1] = led_scroll_pos - 1;
-                        leds[2] = led_scroll_pos - 2;
-                        leds[3] = led_scroll_pos - 3;
-                        break;
-                }
-
-                sk9822_set_color(leds[0], SK9822_MAX_BRIGHTNESS, xLedStyle.color.ch.red, xLedStyle.color.ch.green, xLedStyle.color.ch.blue, 0);
-                sk9822_set_color(leds[1], SK9822_TWOTHIRD_BRIGHTNESS, xLedStyle.color.ch.red, xLedStyle.color.ch.green, xLedStyle.color.ch.blue, 0);
-                sk9822_set_color(leds[2], SK9822_THIRD_BRIGHTNESS, xLedStyle.color.ch.red, xLedStyle.color.ch.green, xLedStyle.color.ch.blue, 0);
-                sk9822_set_color(leds[3], 0x00, 0x00, 0x00, 0x00, 1);
-
-                if(led_scroll_pos == SK9822_LAST_LED)
-                    led_scroll_pos = 0;
-                else
-                    led_scroll_pos++;
-
-                ullLastScrollUpdate = g_ullSystemTick;
-            }
-            }
-            break;
-        case LED_PROGRESS: // TODO
-        case LED_BREATHING: // TODO
-        default:
-            xLedStyle.mode = LED_OFF;
-            break;
-    }
-}
-
-void ui_task()
-{
-    // TODO
-
-    led_task();
 }
 
 static void create_main_tab(lv_obj_t * parent)
