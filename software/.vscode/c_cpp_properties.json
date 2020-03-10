@@ -4,11 +4,11 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/usr/lib/gcc/arm-none-eabi/9.2.0/include",
-                "/usr/lib/gcc/arm-none-eabi/9.2.0/include-fixed",
+                "/usr/lib/gcc/arm-none-eabi/9.2.1/include",
+                "/usr/lib/gcc/arm-none-eabi/9.2.1/include-fixed",
                 "/usr/arm-none-eabi/include",
-                "/usr/arm-none-eabi/include/c++/9.2.0",
-                "/usr/arm-none-eabi/include/c++/9.2.0/backward",
+                "/usr/arm-none-eabi/include/c++/9.2.1",
+                "/usr/arm-none-eabi/include/c++/9.2.1/backward",
                 "/opt/cmsis/cmsis-core/CMSIS/Include",
                 "/opt/cmsis/cmsis-dfp-efm32gg11b/Device/SiliconLabs/EFM32GG11B/Include"
             ],
