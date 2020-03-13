@@ -25,6 +25,7 @@
                         "port": 0,
                         "label": "Console",
                         "type": "console",
+                        "showOnStartup": true
                     }
                 ]
             }

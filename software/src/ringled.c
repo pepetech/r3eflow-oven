@@ -52,14 +52,16 @@ ringled_style_t ringledStyle;
 
 void ringled_task()
 {
-    const float coeficients[8] = {1.f, 0.9f, 0.8f, 0.7f, 0.5f, 0.3f, 0.1f, 0.0f};
-    
+    const float coeficients[16] = {1.f, 0.8f, 0.7f, 0.65f, 0.6f, 0.5f, 0.55f, 0.50f, 0.45f, 0.4f, 0.35f, 0.25f, 0.20f, 0.15f, 0.05f, 0.0f};
+
     static uint8_t ringled_pos;
-    static uint8_t ringled_rate;
+    static uint16_t ringled_rate;
 
     static ringled_color_t colorLookup[16];
 
     static ringled_mode_t lastLedMode = LED_OFF;
+
+    static uint64_t ullLastUpdate = 0;
 
     if (ringledStyle.mode != lastLedMode)
     {
@@ -83,7 +85,17 @@ void ringled_task()
                 sk9822_update();
 
                 break;
-            case LED_BLINKING: // TODO
+            case LED_BLINKING:
+
+                for (uint8_t i = 0; i < SK9822_NUM_LEDS; i++)
+                {
+                    sk9822_set_color(i, 1, ringledStyle.color.ch.red, ringledStyle.color.ch.green, ringledStyle.color.ch.blue, 0);
+                }
+                sk9822_update();
+
+                ullLastUpdate = g_ullSystemTick;
+                ringled_pos = 0;
+                ringled_rate = 250;
 
                 break;
             case LED_SCROLL:
@@ -92,29 +104,31 @@ void ringled_task()
                 colorLookup[0].ch.green = ringledStyle.color.ch.green;
                 colorLookup[0].ch.blue = ringledStyle.color.ch.blue;
 
-                colorLookup[1].ch.red = ringledStyle.color.ch.red * coeficients[4];
-                colorLookup[1].ch.green = ringledStyle.color.ch.green * coeficients[4];
-                colorLookup[1].ch.blue = ringledStyle.color.ch.blue * coeficients[4];
+                colorLookup[1].ch.red = ringledStyle.color.ch.red * coeficients[8];
+                colorLookup[1].ch.green = ringledStyle.color.ch.green * coeficients[8];
+                colorLookup[1].ch.blue = ringledStyle.color.ch.blue * coeficients[8];
 
-                colorLookup[2].ch.red = ringledStyle.color.ch.red * coeficients[6];
-                colorLookup[2].ch.green = ringledStyle.color.ch.green * coeficients[6];
-                colorLookup[2].ch.blue = ringledStyle.color.ch.blue * coeficients[6];
+                colorLookup[2].ch.red = ringledStyle.color.ch.red * coeficients[12];
+                colorLookup[2].ch.green = ringledStyle.color.ch.green * coeficients[12];
+                colorLookup[2].ch.blue = ringledStyle.color.ch.blue * coeficients[12];
 
+                ullLastUpdate = g_ullSystemTick;
                 ringled_pos = 0;
                 ringled_rate = 100;
 
                 break;
             case LED_BREATHING:
 
-                for (uint8_t i = 0; i < 8; i++)
+                for (uint8_t i = 0; i < 16; i++)
                 {
                     colorLookup[i].ch.red = ringledStyle.color.ch.red * coeficients[i];
                     colorLookup[i].ch.green = ringledStyle.color.ch.green * coeficients[i];
                     colorLookup[i].ch.blue = ringledStyle.color.ch.blue * coeficients[i];
                 }
 
+                ullLastUpdate = g_ullSystemTick;
                 ringled_pos = 0;
-                ringled_rate = 200;
+                ringled_rate = 120;
 
                 break;
             case LED_PROGRESS: // TODO
@@ -126,17 +140,41 @@ void ringled_task()
         lastLedMode = ringledStyle.mode;
     }
 
-    static uint64_t ullLastScrollUpdate = 0;
-    static uint64_t ullLastBreathUpdate = 0;
-
     switch(ringledStyle.mode)
     {
         case LED_OFF:
         case LED_STATIC:
-        case LED_BLINKING: // TODO
+        case LED_BLINKING:
+            if(g_ullSystemTick > (ullLastUpdate + ringled_rate))
+            {
+                if(ringled_pos)
+                {
+
+                    for (uint8_t i = 0; i < SK9822_NUM_LEDS; i++)
+                    {
+                        sk9822_set_color(i, 1, ringledStyle.color.ch.red, ringledStyle.color.ch.green, ringledStyle.color.ch.blue, 0);
+                    }
+                    sk9822_update();
+
+                    ringled_pos = !ringled_pos;
+                }
+                else
+                {
+
+                    for (uint8_t i = 0; i < SK9822_NUM_LEDS; i++)
+                    {
+                        sk9822_set_color(i, 1, 0, 0, 0, 0);
+                    }
+                    sk9822_update();
+
+                    ringled_pos = !ringled_pos;
+                }
+
+                ullLastUpdate = g_ullSystemTick;
+            }
             break;
         case LED_SCROLL:
-            if(g_ullSystemTick > (ullLastScrollUpdate + ringled_rate))
+            if(g_ullSystemTick > (ullLastUpdate + ringled_rate))
             {
                 uint8_t leds[4];
 
@@ -178,11 +216,11 @@ void ringled_task()
                 else
                     ringled_pos++;
 
-                ullLastScrollUpdate = g_ullSystemTick;
+                ullLastUpdate = g_ullSystemTick;
             }
             break;
         case LED_BREATHING:
-            if(g_ullSystemTick > (ullLastBreathUpdate + ringled_rate))
+            if(g_ullSystemTick > (ullLastUpdate + ringled_rate))
             {
                 for (uint8_t i = 0; i < SK9822_NUM_LEDS; i++)
                 {
@@ -197,7 +235,7 @@ void ringled_task()
                     direction = 1;
                     ringled_pos += direction;
                 }
-                else if((ringled_pos == 7) && (direction > 0))
+                else if((ringled_pos == 15) && (direction > 0))
                 {
                     direction = -1;
                     ringled_pos += direction;
@@ -206,10 +244,8 @@ void ringled_task()
                 {
                     ringled_pos += direction;
                 }
-                
-                    
 
-                ullLastBreathUpdate = g_ullSystemTick;
+                ullLastUpdate = g_ullSystemTick;
             }
             break;
         case LED_PROGRESS: // TODO
@@ -225,7 +261,7 @@ void ringled_set_style(ringled_style_presets_t ringledStylePreset)
     {
         case STYLE_ABORT:
             ringledStyle.color = LED_COLOR_RED;
-            ringledStyle.mode = LED_STATIC;
+            ringledStyle.mode = LED_BLINKING;
             break;
         case STYLE_IDLE:
             ringledStyle.color = LED_COLOR_CYAN;

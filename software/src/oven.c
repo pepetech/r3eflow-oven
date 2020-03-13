@@ -1,6 +1,10 @@
 #include "oven.h"
 
+profile_t* pxProfile;
+
 static pid_struct_t *pOvenPID = NULL;
+
+float fOvenTemp, fOvenTargetTemp = 0;
 
 ovenMode_t xOvenMode = 4;
 
@@ -92,6 +96,13 @@ void oven_init()
 
     //PRS->ROUTELOC0 |= PRS_ROUTELOC0_CH0LOC_LOC2; // Output Zero Cross for debug purposes
     //PRS->ROUTEPEN |= PRS_ROUTEPEN_CH0PEN;
+
+    pxProfile = profile_new();
+
+    profile_node_t* preheat_node = profile_rpush(pxProfile, profile_node_new(160, 60000));
+    profile_node_t* soak_node = profile_rpush(pxProfile, profile_node_new(190, 60000));
+    profile_node_t* reflow_node = profile_rpush(pxProfile, profile_node_new(230, 60000));
+    profile_node_t* cooldown_node = profile_rpush(pxProfile, profile_node_new(60, 60000));
 }
 
 void oven_task()
@@ -100,103 +111,97 @@ void oven_task()
     static uint64_t ullLastStateUpdate = 0;
     static uint64_t ullLastPIDUpdate = 0;
 
-    float fTemp;
-
     if(g_ullSystemTick > (ullLastTempCheck + 100))
+    {
+        uint8_t ubStatus = mcp9600_get_status(0);
+
+        if(ubStatus & MCP9600_TH_UPDT)
         {
-            uint8_t ubStatus = mcp9600_get_status(0);
+            fOvenTemp = mcp9600_get_hj_temp(0);
+            //float fCold = mcp9600_get_cj_temp(MCP9600_0);
+            //float fDelta = mcp9600_get_temp_delta(MCP9600_0);
 
-            if(ubStatus & MCP9600_TH_UPDT)
-            {
-                fTemp = mcp9600_get_hj_temp(0);
-                //float fCold = mcp9600_get_cj_temp(MCP9600_0);
-                //float fDelta = mcp9600_get_temp_delta(MCP9600_0);
+            mcp9600_set_status(0, 0x00);
+            //mcp9600_set_config(MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
 
-                mcp9600_set_status(0, 0x00);
-                //mcp9600_set_config(MCP9600_BURST_TS_1 | MCP9600_MODE_NORMAL);
+            pOvenPID->fDeltaTime = (float)(g_ullSystemTick - ullLastPIDUpdate) * 0.001f;
+            pOvenPID->fValue = fOvenTemp;
+            pOvenPID->fSetpoint = fOvenTargetTemp;
 
-                pOvenPID->fDeltaTime = (float)(g_ullSystemTick - ullLastPIDUpdate) * 0.001f;
-                pOvenPID->fValue = fTemp;
+            pid_calc(pOvenPID);
 
-                pid_calc(pOvenPID);
+            //DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - ullLastPIDUpdate);
+            //DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", fOvenTemp);
+            //DBGPRINTLN_CTX("PID - MCP9600 cold %.3f C", fCold);
+            //DBGPRINTLN_CTX("PID - MCP9600 delta %.3f C", fDelta);
+            //DBGPRINTLN_CTX("PID - temp target %.3f C", pOvenPID->fSetpoint);
+            //DBGPRINTLN_CTX("PID - integral %.3f", pOvenPID->fIntegral);
+            //DBGPRINTLN_CTX("PID - output %.2f / %d", pOvenPID->fOutput, PHASE_ANGLE_WIDTH);
+            //DBGPRINTLN_CTX("PID - output linear compensated %d / %d", g_usPacLookup[(uint16_t)pOvenPID->fOutput], PHASE_ANGLE_WIDTH);
 
-                DBGPRINTLN_CTX("PID - Last update: %llu ms ago", g_ullSystemTick - ullLastPIDUpdate);
-                DBGPRINTLN_CTX("PID - MCP9600 temp %.3f C", fTemp);
-                //DBGPRINTLN_CTX("PID - MCP9600 cold %.3f C", fCold);
-                //DBGPRINTLN_CTX("PID - MCP9600 delta %.3f C", fDelta);
-                DBGPRINTLN_CTX("PID - temp target %.3f C", pOvenPID->fSetpoint);
-                DBGPRINTLN_CTX("PID - integral %.3f", pOvenPID->fIntegral);
-                DBGPRINTLN_CTX("PID - output %.2f / %d", pOvenPID->fOutput, PHASE_ANGLE_WIDTH);
-                //DBGPRINTLN_CTX("PID - output linear compensated %d / %d", g_usPacLookup[(uint16_t)pOvenPID->fOutput], PHASE_ANGLE_WIDTH);
-
-                ullLastPIDUpdate = g_ullSystemTick;
-            }
-
-            ullLastTempCheck = g_ullSystemTick;
+            ullLastPIDUpdate = g_ullSystemTick;
         }
 
-        if(g_ullSystemTick > (ullLastStateUpdate + 500))
+        ullLastTempCheck = g_ullSystemTick;
+    }
+
+    if(g_ullSystemTick > (ullLastStateUpdate + 500))
+    {
+        static uint64_t ullTimer = 0;
+
+        static profile_node_t *node = NULL;
+        static profile_iterator_t *it = NULL;
+
+        static ovenMode_t lastMode = ABORT;
+
+        static uint64_t nodeStart;
+
+        switch(xOvenMode)
         {
-            static uint64_t ullTimer = 0;
 
-            switch(xOvenMode)
-            {
-                case PREHEAT:     // preheat
-                    DBGPRINTLN_CTX("State - preheat");
-                    DBGPRINTLN_CTX("State - progress - %.3f C / 160 C", fTemp);
-                    pOvenPID->fSetpoint = 145;
-                    if(fTemp > 145)
+            case REFLOW:     // reflow
+                if(lastMode != REFLOW)
+                {
+                    if(it) profile_iterator_destroy(it);
+                    it = profile_iterator_new(pxProfile, PROFILE_HEAD);
+                    node = profile_iterator_next(it);
+                    nodeStart = g_ullSystemTick;
+                    fOvenTargetTemp = node->target;
+                }
+                if(g_ullSystemTick > (node->minTime + nodeStart))
+                {
+                    if(node = profile_iterator_next(it))
                     {
-                        xOvenMode = SOAK;
-                        ullTimer = g_ullSystemTick;
+                        nodeStart = g_ullSystemTick;
+                        fOvenTargetTemp = node->target;
                     }
-                    break;
-
-                case SOAK:     // soak
-                    DBGPRINTLN_CTX("State - soak");
-                    DBGPRINTLN_CTX("State - progress - %lu ms left", (ullTimer + 70000) - g_ullSystemTick);
-                    pOvenPID->fSetpoint = 160;
-                    if(g_ullSystemTick > (ullTimer + 70000))
+                    else
                     {
-                        xOvenMode = REFLOW;
-                        ullTimer = g_ullSystemTick;
-                    }
-
-                    break;
-
-                case REFLOW:     // reflow
-                    DBGPRINTLN_CTX("State - reflow");
-                    DBGPRINTLN_CTX("State - progress - %.3f C / 220 C", fTemp);
-                    pOvenPID->fSetpoint = 240;
-                    if(fTemp > 220)
-                    {
-                        xOvenMode = COOLDOWN;
-                        ullTimer = g_ullSystemTick;
-                    }
-                    break;
-
-                case COOLDOWN:     // cool
-                    DBGPRINTLN_CTX("State - cool");
-                    pOvenPID->fSetpoint = 0;
-                    if(fTemp < 60)
-                    {
+                        fOvenTargetTemp = 0;
                         xOvenMode = IDLE;
-                        ullTimer = g_ullSystemTick;
                     }
-                    break;
+                }
+                break;
 
-                case IDLE:     // idle
-                    DBGPRINTLN_CTX("State - idle");
-                    break;
+            case ABORT:
+                break;
 
-                default:
-                    oven_abort(ERRONEOUS_STATE);
-                    pOvenPID->fSetpoint = 0;
-                    break;
-            }
+            case IDLE:     // idle
+                //DBGPRINTLN_CTX("State - idle");
+                fOvenTargetTemp = 0;
+                break;
 
-            ullLastStateUpdate = g_ullSystemTick;
+            default:
+                oven_abort(ERRONEOUS_STATE);
+                fOvenTargetTemp = 0;
+                break;
         }
+
+        lastMode = xOvenMode;
+        ullLastStateUpdate = g_ullSystemTick;
+    }
+
+
 }
 
 ovenMode_t oven_get_mode()
@@ -204,9 +209,19 @@ ovenMode_t oven_get_mode()
     return xOvenMode;
 }
 
+float oven_get_temperature()
+{
+    return fOvenTemp;
+}
+
+float oven_get_target_temperature()
+{
+    return fOvenTargetTemp;
+}
+
 void oven_start()
 {
-    xOvenMode = PREHEAT;
+    xOvenMode = REFLOW;
 }
 
 void oven_abort(ovenErr_t reason)

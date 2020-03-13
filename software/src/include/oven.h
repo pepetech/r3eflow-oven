@@ -8,6 +8,7 @@
 #include "pid.h"
 #include "nvic.h"
 #include "pac_lookup.h"
+#include "profile.h"
 
 #define ZEROCROSS_DELAY     10    // us
 #define SSR_LATCH_OFFSET    10       // us
@@ -50,6 +51,8 @@ static const char *ovenERR_str[] = {
 void oven_init();
 void oven_task();
 ovenMode_t oven_get_mode();
+float oven_get_temperature();
+float oven_get_target_temperature();
 void oven_start();
 void oven_abort(ovenErr_t cause);
 ovenErr_t oven_get_err();

@@ -38,7 +38,7 @@
 #define LV_VER_RES_MAX          (320U)
 #endif
 
-#define DISP_BUF_SIZE   (480U * 40U)    /*A buffer for 40 rows*/
+#define DISP_BUF_SIZE   (480U * 320U)    /*A buffer for 40 rows*/
 
 /* Color depth:
  * - 1:  1 byte per pixel
